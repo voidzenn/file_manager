@@ -209,10 +209,6 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 3.0)
       websocket (~> 1.0)
-    shoulda (4.0.0)
-      shoulda-context (~> 2.0)
-      shoulda-matchers (~> 4.0)
-    shoulda-context (2.0.0)
     shoulda-matchers (4.5.1)
       activesupport (>= 4.2.0)
     sprockets (4.2.0)
@@ -269,7 +265,7 @@ DEPENDENCIES
   redis (~> 4.0)
   rspec-rails
   selenium-webdriver
-  shoulda
+  shoulda-matchers
   sprockets-rails
   stimulus-rails
   turbo-rails

@@ -14,13 +14,15 @@ gem "redis", "~> 4.0"
 gem "tzinfo-data", platforms: %i[ mingw mswin x64_mingw jruby ]
 gem "bootsnap", require: false
 gem "figaro"
-gem "faker"
-gem "factory_bot_rails"
 
 group :development, :test do
   gem "debug", platforms: %i[ mri mingw x64_mingw ]
+  gem "faker"
+  gem "factory_bot_rails"
   gem "pry-byebug"
   gem "pry-rails"
+  gem "rspec-rails"
+  gem "shoulda-matchers"
 end
 
 group :development do
@@ -31,6 +33,4 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
   gem "webdrivers"
-  gem "rspec-rails", require: false
-  gem "shoulda", require: false
 end
