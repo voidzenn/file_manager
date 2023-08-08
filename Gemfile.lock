@@ -113,6 +113,7 @@ GEM
     jbuilder (2.11.5)
       actionview (>= 5.0.0)
       activesupport (>= 5.0.0)
+    jwt (2.7.1)
     loofah (2.21.2)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
@@ -257,6 +258,7 @@ DEPENDENCIES
   figaro
   importmap-rails
   jbuilder
+  jwt
   mysql2 (~> 0.5)
   pry-byebug
   pry-rails
