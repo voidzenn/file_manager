@@ -26,6 +26,7 @@ group :development, :test do
   gem "shoulda-matchers"
   gem "simplecov"
   gem "rails-controller-testing"
+  gem "brakeman"
 end
 
 group :development do
