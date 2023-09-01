@@ -8,7 +8,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
     volumes:
-      - storage_sample:/var/lib/mysql:rw
+      - file_manager:/var/lib/mysql
   minio:
     image: minio/minio
     container_name: minio
@@ -19,8 +19,8 @@ services:
       MINIO_ROOT_USER: 'my_access_key'
       MINIO_ROOT_PASSWORD: 'my_secret_key'
     volumes:
-      - storage_sample:/data
-      - storage_sample:/root/.minio
+      - file_manager:/data
+      - file_manager:/root/.minio
     command: server /data
 volumes:
-  storage_sample:
+  file_manager:
