@@ -1,6 +1,20 @@
-DB_HOST: '127.0.0.1'
-DB_PORT: '3307'
-DB_USERNAME: 'root'
-DB_PASSWORD: 'root'
-DB_NAME: 'dev_db'
-TEST_DB_NAME: 'test_db'
+default: &default
+  DB_HOST: '127.0.0.1'
+  DB_PORT: '3307'
+  DB_USERNAME: 'root'
+  DB_PASSWORD: 'root'
+
+  SECRET_KEY: ~
+  EXPIRATION_TIME_HOURS: ~
+
+development:
+  <<: *default
+  DB_NAME: 'dev_db'
+
+development:
+  <<: *default
+  DB_NAME: 'test_db'
+
+production:
+ <<: *default
+  DB_NAME: 'prod_db'
