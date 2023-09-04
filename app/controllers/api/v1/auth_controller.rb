@@ -18,7 +18,6 @@ class Api::V1::AuthController < Api::V1::BaseController
 
   def success_response
     {
-      message: "Successfully signed up",
       email: @user.email,
       fname: @user.fname,
       lname: @user.lname

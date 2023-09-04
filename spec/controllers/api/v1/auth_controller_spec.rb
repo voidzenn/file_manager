@@ -14,7 +14,9 @@ RSpec.describe Api::V1::AuthController, type: :controller do
     end
 
     it "return #{field_name} error message" do
+      expect(response_body[:success]).to eq false
       expect(response_body[:errors][0]).to eq "#{field_name.humanize} cannot be blank"
+      expect(response).to have_http_status(:bad_request)
     end
   end
 
@@ -38,7 +40,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
           expect(assigns(:user)).to be_persisted
 
           expect(response).to have_http_status(:ok)
-          expect(response_body[:success]).to be_truthy
+          expect(response_body[:success]).to eq true
           expect(response_body[:data][:email]).to eq valid_params[:email]
           expect(response_body[:data][:fname]).to eq valid_params[:fname]
           expect(response_body[:data][:lname]).to eq valid_params[:lname]
