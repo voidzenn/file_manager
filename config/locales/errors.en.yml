@@ -1,0 +1,9 @@
+en:
+  errors:
+    params:
+      missing:
+        message: "Parameter missing"
+    messages:
+      blank: "%{attribute} cannot be blank"
+      invalid: "%{attribute} is invalid"
+      taken: "%{attribute} already exists"
