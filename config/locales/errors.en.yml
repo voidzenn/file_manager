@@ -7,3 +7,6 @@ en:
       blank: "%{attribute} cannot be blank"
       invalid: "%{attribute} is invalid"
       taken: "%{attribute} already exists"
+    unauthorized:
+      invalid_email_password:
+        message: "Email or Password is invalid"
