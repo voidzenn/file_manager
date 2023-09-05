@@ -107,4 +107,87 @@ RSpec.describe Api::V1::AuthController, type: :controller do
       end
     end
   end
+
+  describe "POST #sign_in" do
+    context "when signed in successfully" do
+      let(:user) { create :user }
+      let(:valid_params) do
+        {
+          email: user.email,
+          password: user.password
+        }
+      end
+
+      before do
+        post :sign_in, params: valid_params
+      end
+
+      it do
+        expect(response_body[:success]).to eq true
+        expect(response_body[:data][:token]).to eq assigns(:token)
+        expect(response_body[:data][:email]).to eq user.email
+        expect(response_body[:data][:fname]).to eq user.fname
+        expect(response_body[:data][:lname]).to eq user.lname
+      end
+    end
+
+    context "when sign in fails" do
+      context "when user email not found" do
+        let(:params) do
+          { email: "user@user.com" }
+        end
+
+        before do
+          allow(User).to receive(:find_by).and_raise(ActiveRecord::RecordNotFound)
+          post :sign_in, params: params
+        end
+
+        it do
+          expect(response).to have_http_status(:not_found)
+          expect(response.body).to eq "{}"
+        end
+      end
+
+      context "when parameter is missing" do
+        before do
+          post :sign_in, params: {}
+        end
+
+        it do
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(response_body[:message]).to eq "Parameter missing"
+        end
+      end
+
+      context "when email params missing" do
+        let(:params) do
+          { password: "admin123" }
+        end
+
+        before do
+          post :sign_in, params: params
+        end
+
+        it do
+          expect(response).to have_http_status(:unauthorized)
+          expect(response_body[:message]).to eq "Email or Password is invalid"
+        end
+      end
+
+      context "when password params missing" do
+        let(:params) do
+          { email: "user@user.com" }
+        end
+
+        before do
+          post :sign_in, params: params
+        end
+
+        it do
+          expect(response).to have_http_status(:unauthorized)
+          expect(response_body[:message]).to eq "Email or Password is invalid"
+        end
+      end
+    end
+  end
 end
