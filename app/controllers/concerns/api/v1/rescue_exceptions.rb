@@ -14,6 +14,12 @@ module Api
         )
         rescue_from ActiveRecord::RecordNotFound, with: :rescue_not_found
         rescue_from Api::Error::UnauthorizedError, with: :rescue_unauthorized
+        rescue_from(
+          Aws::S3::Errors::BucketAlreadyExists,
+          Aws::S3::Errors::BucketAlreadyOwnedByYou,
+          with: :rescue_bucket_exists
+        )
+        rescue_from Aws::S3::Errors::InvalidBucketName, with: :rescue_bucket_invalid
       end
 
       private
@@ -33,6 +39,14 @@ module Api
 
       def rescue_unauthorized error
         render json: I18n.t("errors.unauthorized.#{error.message.to_s}"), status: :unauthorized
+      end
+
+      def rescue_bucket_exists
+        # No action is taken, error is silently handled
+      end
+
+      def rescue_bucket_invalid
+        # No action is taken, error is silently handled
       end
     end
   end

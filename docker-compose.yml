@@ -22,5 +22,12 @@ services:
       - file_manager:/data
       - file_manager:/root/.minio
     command: server /data
+  redis:
+    image: redis:7.2
+    container_name: redis
+    ports:
+      - 6379:6379
+    volumes:
+      - file_manager:/data
 volumes:
   file_manager:
