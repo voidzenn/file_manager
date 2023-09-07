@@ -16,6 +16,8 @@ gem "bootsnap", require: false
 gem "figaro"
 gem "jwt"
 gem "bcrypt"
+gem "sidekiq"
+gem "aws-sdk-s3", require: false
 
 group :development, :test do
   gem "debug", platforms: %i[ mri mingw x64_mingw ]
