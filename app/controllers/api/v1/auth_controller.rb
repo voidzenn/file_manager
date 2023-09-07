@@ -7,6 +7,9 @@ class Api::V1::AuthController < Api::V1::BaseController
 
     raise ActiveRecord::RecordInvalid, @user unless @user.valid?
 
+    # Create new root folder for user
+    Api::V1::CreateUserRootFolderService.new(@user.id).perform
+
     @user.save
     render_jsonapi sign_up_response
   end
