@@ -33,6 +33,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
     context "when user signed up successfully" do
       context "when all fields are valid" do
         before do
+          allow_any_instance_of(Aws::S3::Resource).to receive(:bucket).and_return(double(object: double(put: true)))
           post :sign_up, params: { user: valid_params }
         end
 
