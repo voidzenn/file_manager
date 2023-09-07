@@ -17,7 +17,7 @@ RSpec.describe Api::V1::CreateBucketService do
       end
     end
 
-    context "when bucket created fails" do
+    context "when bucket create fails" do
       context "when bucket exists" do
         before do
           allow_any_instance_of(Aws::S3::Resource).to receive(:create_bucket).and_raise(Aws::S3::Errors::BucketAlreadyExists.new({}, "BucketAlreadyExists"))

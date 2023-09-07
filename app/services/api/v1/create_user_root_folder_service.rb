@@ -15,14 +15,16 @@ class Api::V1::CreateUserRootFolderService
 
   attr_reader :user_id, :bucket_name
 
-  def create_folder
-    folder_key = "#{user_id}/"
-
-    @bucket.object(folder_key).put(body: "")
-  end
-
   def initialize_bucket
     s3 = Aws::S3::Resource.new
     @bucket = s3.bucket(bucket_name)
+  end
+
+  def create_folder
+    return unless user_id.is_a? Numeric
+
+    folder_key = "#{user_id}/"
+
+    @bucket.object(folder_key).put(body: "")
   end
 end
