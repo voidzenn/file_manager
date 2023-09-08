@@ -2,9 +2,9 @@
 
 class JsonWebToken
   SECRET_KEY = ENV['SECRET_KEY']
-  DEFAULT_EXPIRATION_TIME_HOURS = 24
+  DEFAULT_EXPIRATION_TIME_MINUTES = 15
 
-  def self.encode payload, exp = DEFAULT_EXPIRATION_TIME_HOURS.hours.from_now
+  def self.encode payload, exp = DEFAULT_EXPIRATION_TIME_MINUTES.minutes.from_now
     payload[:exp] = exp.to_i
     JWT.encode payload, SECRET_KEY
   end
