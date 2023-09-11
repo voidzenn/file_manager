@@ -47,7 +47,12 @@ module Api
       end
 
       def rescue_unauthorized error
-        render json: I18n.t("errors.unauthorized.#{error.message.to_s}"),
+        response_body = if error.message.nil?
+                          I18n.t("errors.unauthorized.default")
+                        else
+                          I18n.t("errors.unauthorized.#{error.message.to_s}")
+                        end
+        render json: response_body,
                status: :unauthorized
       end
 
