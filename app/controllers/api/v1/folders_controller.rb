@@ -2,9 +2,11 @@
 
 class Api::V1::FoldersController < Api::V1::BaseController
   def create
-    @folder = Folder.create folder_params
+    @folder = Folder.new(folder_params.merge(user_id: current_user_id))
 
     raise ActiveRecord::RecordInvalid, @folder unless @folder.valid?
+
+    create_folder
 
     @folder.save
     render_jsonapi success_response
@@ -13,12 +15,18 @@ class Api::V1::FoldersController < Api::V1::BaseController
   private
 
   def folder_params
-    params.require(:folder).permit(:name, :parent_id, :child_id)
+    params.require(:folder).permit(:path)
   end
 
   def success_response
     {
-      folder_name: @folder.name
+      path: @folder.path
     }
+  end
+
+  def create_folder
+    create = Api::V1::CreateFolderService.new(current_user_id, @folder.path)
+
+    raise Api::Error::InternalServerError, nil unless create.perform
   end
 end

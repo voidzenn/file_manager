@@ -28,6 +28,11 @@ module Api
           with: :rescue_bucket_invalid
         )
         rescue_from Aws::S3::Errors::NoSuchBucket, with: :rescue_no_such_bucket
+        rescue_from NameError, with: :rescue_name_error
+        rescue_from(
+          Api::Error::InternalServerError,
+          with: :rescue_internal_server_error
+        )
       end
 
       private
@@ -52,8 +57,7 @@ module Api
                         else
                           I18n.t("errors.unauthorized.#{error.message.to_s}")
                         end
-        render json: response_body,
-               status: :unauthorized
+        render json: response_body, status: :unauthorized
       end
 
       def rescue_bucket_exists
@@ -66,6 +70,19 @@ module Api
 
       def rescue_no_such_bucket
         # No action is taken, error is silently handled
+      end
+
+      def rescue_name_error
+        # No action is taken, error is silently handled
+      end
+
+      def rescue_internal_server_error error
+        response_body = if error.message.nil?
+                          I18n.t("errors.internal_server_error.default")
+                        else
+                          I18n.t("errors.internal_server_error.#{error.message.to_s}")
+                        end
+        render json: response_body, status: :internal_server_error
       end
     end
   end

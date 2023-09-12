@@ -30,6 +30,6 @@ class Api::V1::CreateFolderService
 
   def folder_key!
     # Should start with / to locate folder
-    "#/{user_id}/#{path}"
+    "/#{user_id}/#{path}"
   end
 end
