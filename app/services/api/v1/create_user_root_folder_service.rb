@@ -3,7 +3,6 @@
 class Api::V1::CreateUserRootFolderService
   def initialize user_id
     @user_id = user_id
-    @bucket_name = ENV.fetch("AWS_BUCKET_NAME", "users")
   end
 
   def perform
@@ -16,8 +15,7 @@ class Api::V1::CreateUserRootFolderService
   attr_reader :user_id, :bucket_name
 
   def initialize_bucket
-    s3 = Aws::S3::Resource.new
-    @bucket = s3.bucket(bucket_name)
+    @bucket = Api::V1::GetCurrentBucketService.new.perform
   end
 
   def create_folder
