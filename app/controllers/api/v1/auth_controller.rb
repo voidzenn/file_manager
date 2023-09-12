@@ -1,9 +1,9 @@
 class Api::V1::AuthController < Api::V1::BaseController
-  skip_before_action :verify_authenticity_token, only: %i(sign_up sign_in)
+  skip_before_action :authenticate_request!
   before_action :find_user, only: %i(sign_in)
 
   def sign_up
-    @user = User.create sign_up_params
+    @user = User.new sign_up_params
 
     raise ActiveRecord::RecordInvalid, @user unless @user.valid?
 
@@ -17,7 +17,7 @@ class Api::V1::AuthController < Api::V1::BaseController
   def sign_in
     if @user && @user.authenticate(params[:password])
       payload = { email: @user.email }
-      @token = JsonWebToken.encode payload, 1 # Hour
+      @token = JsonWebToken.encode payload
 
       render_jsonapi sign_in_response
     else
