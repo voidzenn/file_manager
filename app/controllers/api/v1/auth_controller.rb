@@ -1,8 +1,9 @@
 class Api::V1::AuthController < Api::V1::BaseController
+  skip_before_action :authenticate_request!
   before_action :find_user, only: %i(sign_in)
 
   def sign_up
-    @user = User.create sign_up_params
+    @user = User.new sign_up_params
 
     raise ActiveRecord::RecordInvalid, @user unless @user.valid?
 
