@@ -13,6 +13,10 @@ RSpec.describe Folder, type: :model do
     describe "#path" do
       it do
         is_expected.to validate_presence_of(:path)
+        is_expected.to allow_value("new_path/").for(:path)
+        is_expected.to_not allow_value("/new_path").for(:path).with_message(I18n.t("errors.models.folder.path.format"))
+        is_expected.to_not allow_value("/new_path/").for(:path).with_message(I18n.t("errors.models.folder.path.format"))
+        is_expected.to_not allow_value("new_path").for(:path).with_message(I18n.t("errors.models.folder.path.format"))
       end
     end
   end

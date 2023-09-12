@@ -13,3 +13,11 @@ en:
         message: "Unauthorized"
       invalid_email_password:
         message: "Email or Password is invalid"
+    internal_server_error:
+      default:
+        message: "Internal Server Error"
+    models:
+      folder:
+        path:
+          format:
+            message: "Must not start with / and must end with /"
