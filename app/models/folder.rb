@@ -1,6 +1,12 @@
 class Folder < ApplicationRecord
+  belongs_to :user
+
   validates :user_id, numericality: { only_integer: true, greater_than: 0 }
-  validates :path, presence: true
+  validates :path, presence: true,
+            uniqueness: {
+              scope: :user_id,
+              message: I18n.t("errors.models.folder.path.uniqueness.message")
+            }
   validate :path_format
 
   private
