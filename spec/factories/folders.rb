@@ -1,6 +1,7 @@
 FactoryBot.define do
   factory :folder do
-    name { Faker::Lorem.word }
+    # We use sequence to make sure that the path is unique
+    sequence(:path) { |n| "#{n}/" }
     user { create :user }
   end
 end

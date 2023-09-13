@@ -21,3 +21,5 @@ en:
         path:
           format:
             message: "Must not start with / and must end with /"
+          uniqueness:
+            message: "Path already exists"
