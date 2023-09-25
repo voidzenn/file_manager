@@ -64,7 +64,7 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
         it 'returns "must not allow / and must end with /"' do
           expect(subject).to have_http_status(:bad_request)
           expect(response_body[:success]).to eq false
-          expect(response_body[:errors][0]).to eq I18n.t("errors.models.folder.path.format")
+          expect(response_body[:errors][0]).to eq I18n.t("errors.models.folder.format.message")
         end
       end
 
@@ -80,7 +80,7 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
         it 'returns "must not allow / and must end with /"' do
           expect(subject).to have_http_status(:bad_request)
           expect(response_body[:success]).to eq false
-          expect(response_body[:errors][0]).to eq I18n.t("errors.models.folder.path.format")
+          expect(response_body[:errors][0]).to eq I18n.t("errors.models.folder.format.message")
         end
       end
 
@@ -96,7 +96,7 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
         it 'returns "must not allow / and must end with /"' do
           expect(subject).to have_http_status(:bad_request)
           expect(response_body[:success]).to eq false
-          expect(response_body[:errors][0]).to eq I18n.t("errors.models.folder.path.format")
+          expect(response_body[:errors][0]).to eq I18n.t("errors.models.folder.format.message")
         end
       end
     end
