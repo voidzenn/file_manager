@@ -47,7 +47,7 @@ module Api
 
       def rescue_parameter_missing error
         render json: I18n.t("errors.params.missing"),
-               status: :unprocessable_entity
+               status: :bad_request
       end
 
       def rescue_bad_request error
@@ -97,7 +97,6 @@ module Api
       end
 
       def rescue_unpermited_parameters error
-        p ({error: error.message})
         render json: I18n.t("errors.params.unpermitted"),
                status: :unprocessable_entity
       end
