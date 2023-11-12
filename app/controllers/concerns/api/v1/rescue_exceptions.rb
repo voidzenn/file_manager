@@ -30,21 +30,29 @@ module Api
         rescue_from Aws::S3::Errors::NoSuchBucket, with: :rescue_no_such_bucket
         rescue_from NameError, with: :rescue_name_error
         rescue_from(
+          Api::Error::UnprocessableEntity,
+          with: :rescue_unprocessable_entity
+        )
+        rescue_from(
           Api::Error::InternalServerError,
           with: :rescue_internal_server_error
+        )
+        rescue_from(
+          ActionController::UnpermittedParameters,
+          with: :rescue_unpermited_parameters
         )
       end
 
       private
 
       def rescue_parameter_missing error
-        render json: I18n.t("errors.params.missing"),
-               status: :unprocessable_entity
+        render json: I18n.t("errors.params.missing")
+          .merge({ details: error.message }), status: :bad_request
       end
 
       def rescue_bad_request error
         response_body = ActiveRecordValidation::Error.new(error.record).to_hash
-        render json: response_body, status: :bad_request
+        render json: response_body, status: :unprocessable_entity
       end
 
       def rescue_not_found
@@ -76,6 +84,9 @@ module Api
         # No action is taken, error is silently handled
       end
 
+      def rescue_unprocessable_entity error
+      end
+
       def rescue_internal_server_error error
         response_body = if error.message.nil?
                           I18n.t("errors.internal_server_error.default")
@@ -83,6 +94,11 @@ module Api
                           I18n.t("errors.internal_server_error.#{error.message.to_s}")
                         end
         render json: response_body, status: :internal_server_error
+      end
+
+      def rescue_unpermited_parameters error
+        render json: I18n.t("errors.params.unpermitted"),
+               status: :unprocessable_entity
       end
     end
   end

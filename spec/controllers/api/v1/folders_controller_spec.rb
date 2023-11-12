@@ -33,7 +33,7 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
         subject{ post :create, params: {} }
 
         it do
-          expect(subject).to have_http_status(:unprocessable_entity)
+          expect(subject).to have_http_status(:bad_request)
           expect(response_body[:message]).to eq "Parameter missing"
         end
       end
@@ -46,9 +46,9 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
         subject{ post :create, params: { folder: params } }
 
         it do
-          expect(subject).to have_http_status(:bad_request)
+          expect(subject).to have_http_status(:unprocessable_entity)
           expect(response_body[:success]).to eq false
-          expect(response_body[:errors][0]).to eq "Path cannot be blank"
+          expect(response_body[:errors][0][:path]).to eq "Path cannot be blank"
         end
       end
 
@@ -62,9 +62,9 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
         subject{ post :create, params: { folder: params } }
 
         it 'returns "must not allow / and must end with /"' do
-          expect(subject).to have_http_status(:bad_request)
+          expect(subject).to have_http_status(:unprocessable_entity)
           expect(response_body[:success]).to eq false
-          expect(response_body[:errors][0]).to eq I18n.t("errors.models.folder.path.format")
+          expect(response_body[:errors][0][:path]).to eq I18n.t("errors.models.folder.format.message")
         end
       end
 
@@ -78,9 +78,9 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
         subject{ post :create, params: { folder: params } }
 
         it 'returns "must not allow / and must end with /"' do
-          expect(subject).to have_http_status(:bad_request)
+          expect(subject).to have_http_status(:unprocessable_entity)
           expect(response_body[:success]).to eq false
-          expect(response_body[:errors][0]).to eq I18n.t("errors.models.folder.path.format")
+          expect(response_body[:errors][0][:path]).to eq I18n.t("errors.models.folder.format.message")
         end
       end
 
@@ -94,9 +94,9 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
         subject{ post :create, params: { folder: params } }
 
         it 'returns "must not allow / and must end with /"' do
-          expect(subject).to have_http_status(:bad_request)
+          expect(subject).to have_http_status(:unprocessable_entity)
           expect(response_body[:success]).to eq false
-          expect(response_body[:errors][0]).to eq I18n.t("errors.models.folder.path.format")
+          expect(response_body[:errors][0][:path]).to eq I18n.t("errors.models.folder.format.message")
         end
       end
     end

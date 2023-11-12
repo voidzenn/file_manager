@@ -33,6 +33,9 @@ Rails.application.configure do
     config.cache_store = :null_store
   end
 
+  # Enable unpermitted parameters error to be raised.
+  config.action_controller.action_on_unpermitted_parameters = :raise
+
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :amazon
 

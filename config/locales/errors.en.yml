@@ -3,6 +3,8 @@ en:
     params:
       missing:
         message: "Parameter missing"
+      unpermitted:
+        message: "Unprocessable Entity"
     messages:
       blank: "%{attribute} cannot be blank"
       invalid: "%{attribute} is invalid"
@@ -18,8 +20,7 @@ en:
         message: "Internal Server Error"
     models:
       folder:
-        path:
-          format:
-            message: "Must not start with / and must end with /"
-          uniqueness:
-            message: "Path already exists"
+        format:
+          message: "Must not start with / and must end with /"
+        uniqueness:
+          message: "Path already exists"
