@@ -19,7 +19,7 @@ class Api::V1::AuthController < Api::V1::BaseController
       payload = { email: @user.email }
       @token = JsonWebToken.encode payload
 
-      render_jsonapi sign_in_response
+      sign_in_response
     else
       raise Api::Error::UnauthorizedError, :invalid_email_password
     end
@@ -50,11 +50,16 @@ class Api::V1::AuthController < Api::V1::BaseController
   end
 
   def sign_in_response
-    {
-      token: @token,
-      email: @user.email,
-      fname: @user.fname,
-      lname: @user.lname
+    response_data = {
+        email: @user.email,
+        fname: @user.fname,
+        lname: @user.lname
+      }
+
+    meta = {
+      meta: { token: @token }
     }
+
+    render_jsonapi response_data, meta
   end
 end

@@ -27,7 +27,12 @@ RSpec.describe User, type: :model do
 
     describe "attribute password" do
       it do
-        is_expected.to validate_presence_of(:email)
+        is_expected.to validate_presence_of(:password)
+
+        is_expected.to allow_value("Password12!").for(:password)
+        is_expected.to_not allow_value("pass").for(:password)
+        is_expected.to_not allow_value("password").for(:password)
+        is_expected.to_not allow_value("passwordddddddddddd").for(:password)
       end
     end
 

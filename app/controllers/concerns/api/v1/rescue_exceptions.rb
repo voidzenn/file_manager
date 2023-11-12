@@ -46,13 +46,13 @@ module Api
       private
 
       def rescue_parameter_missing error
-        render json: I18n.t("errors.params.missing"),
-               status: :bad_request
+        render json: I18n.t("errors.params.missing")
+          .merge({ details: error.message }), status: :bad_request
       end
 
       def rescue_bad_request error
         response_body = ActiveRecordValidation::Error.new(error.record).to_hash
-        render json: response_body, status: :bad_request
+        render json: response_body, status: :unprocessable_entity
       end
 
       def rescue_not_found
