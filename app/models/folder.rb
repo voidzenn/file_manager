@@ -5,7 +5,8 @@ class Folder < ApplicationRecord
   validates :path, presence: true,
             uniqueness: {
               scope: :user_id,
-              message: I18n.t("errors.models.folder.path.uniqueness.message")
+              case_sensitive: true,
+              message: I18n.t("errors.models.folder.uniqueness.message")
             }
   validate :path_format
 
@@ -13,7 +14,7 @@ class Folder < ApplicationRecord
 
   def path_format
     if path.present? && (path.start_with?("/") || !path.ends_with?("/"))
-      errors.add(:path, I18n.t("errors.models.folder.path.format"))
+      errors.add(:path, I18n.t("errors.models.folder.format.message"))
     end
   end
 end

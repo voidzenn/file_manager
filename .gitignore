@@ -37,11 +37,8 @@
 # Ignore application configuration
 /config/application.yml
 
-<<<<<<< Updated upstream
-=======
-# Ignore yml config
-/config/application.ynml
-
->>>>>>> Stashed changes
 # Coverage
 /coverage/
+
+# Schema
+/db/schema.rb

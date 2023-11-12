@@ -10,6 +10,9 @@ module Api
       end
     end
 
+    class UnprocessableEntity < Error
+    end
+
     class UnauthorizedError < Error
     end
 

@@ -20,7 +20,7 @@ module ActiveRecordValidation
       full_message = @record.errors.to_hash
 
       @record.errors.to_hash.map do |field, message|
-        errors << message.first
+        errors << { field => message.first }
       end
 
       errors
