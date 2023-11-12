@@ -16,7 +16,7 @@ class Api::V1::AuthController < Api::V1::BaseController
 
   def sign_in
     if @user && @user.authenticate(params[:password])
-      payload = { email: @user.email }
+      payload = { user_id: @user.id }
       @token = JsonWebToken.encode payload
 
       sign_in_response
