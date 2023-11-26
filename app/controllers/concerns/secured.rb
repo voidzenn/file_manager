@@ -14,23 +14,32 @@ module Secured
   end
 
   def load_user
-    raise Api::Error::UnauthorizedError, nil if token_expired?
-
-    User.find(jwt_token["user_id"])
+    User.find(jwt_token.id)
   rescue ActiveRecord::RecordNotFound
     raise Api::Error::UnauthorizedError, nil
   end
 
   def jwt_token
-    authorization = request.headers["Authorization"].split(" ").last
-    decoded_token = JsonWebToken.decode authorization
+    token = request.headers["Authorization"].split(" ").last
+    decoded = decode_token token
 
-    raise Api::Error::UnauthorizedError, nil if decoded_token.nil?
+    raise Api::Error::UnauthorizedError, nil if decoded.nil?
 
-    decoded_token
+    decoded
   end
 
-  def token_expired?
-    Time.now.to_i >= jwt_token["exp"]
+  def decode_token token
+    JsonWebToken.decode token
+  rescue JWT::DecodeError
+    render_error_response 'Invalid token'
+  rescue  JWT::ExpiredSignature
+    render_error_response 'Token has expired'
+  end
+
+  def render_error_response message
+    render json: {
+      success: false,
+      token: message,
+    }, status: :unauthorized
   end
 end

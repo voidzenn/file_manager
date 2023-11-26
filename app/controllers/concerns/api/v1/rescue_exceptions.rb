@@ -77,7 +77,10 @@ module Api
       end
 
       def rescue_no_such_bucket
-        # No action is taken, error is silently handled
+        render json: {
+          error: 'No such bucket exist',
+          details: 'Run rake task'
+        }, status: :internal_server_error
       end
 
       def rescue_name_error
