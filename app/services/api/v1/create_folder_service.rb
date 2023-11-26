@@ -20,9 +20,7 @@ class Api::V1::CreateFolderService
   end
 
   def create_folder
-    # :path should not start with /
     return if path.starts_with? "/"
-    # :path should end with / to create as folder
     return unless path.ends_with? "/"
 
     @bucket.object(folder_key!).put(body: "")
