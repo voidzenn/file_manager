@@ -5,7 +5,7 @@ namespace :init do
   task create_users_bucket: :environment do
     bucket_name = ENV.fetch("AWS_BUCKET_NAME", "users")
 
-    puts "Creating bucket"
-    Api::V1::CreateBucketService.new("bucket_name").perform
+    Api::V1::CreateBucketService.new(bucket_name).perform
+    puts "Successfully create #{bucket_name}"
   end
 end

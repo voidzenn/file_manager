@@ -20,8 +20,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_13_031649) do
     t.index ["user_id"], name: "index_folders_on_user_id"
   end
 
-  create_table "users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.string "email", null: false, collation: "utf8mb4_unicode_ci"
+  create_table "users", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.string "email", null: false
     t.string "password_digest", null: false
     t.string "fname", null: false
     t.string "lname", null: false
