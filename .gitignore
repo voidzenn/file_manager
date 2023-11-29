@@ -41,4 +41,4 @@
 /coverage/
 
 # Schema
-/db/schema.rb
+db/schema.rb
