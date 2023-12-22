@@ -109,15 +109,28 @@ RSpec.describe Folder, type: :model do
         expect(described_class.new(user_id: user.id, path: 'abc~/')).to be_valid
       end
 
-      it 'should not accept' do
+      it 'should not accept without names' do
         expect(described_class.new(user_id: user.id, path: '/')).to_not be_valid
         expect(described_class.new(user_id: user.id, path: './')).to_not be_valid
         expect(described_class.new(user_id: user.id, path: '//')).to_not be_valid
+      end
+
+      it 'should not accept regular expression' do
         expect(described_class.new(user_id: user.id, path: "'\\n/'")).to_not be_valid
         expect(described_class.new(user_id: user.id, path: "'\\r/'")).to_not be_valid
         expect(described_class.new(user_id: user.id, path: "'\\t/'")).to_not be_valid
+      end
+
+      it 'should not accept space as last name character' do
         expect(described_class.new(user_id: user.id, path: ' 123 Abc /')).to_not be_valid
+      end
+
+      it 'should not accept if no forward slash as last character' do
         expect(described_class.new(user_id: user.id, path: '/abc')).to_not be_valid
+      end
+
+      it 'should not accept double slashes' do
+        expect(described_class.new(user_id: user.id, path: '123123/abc/')).to_not be_valid
       end
     end
   end

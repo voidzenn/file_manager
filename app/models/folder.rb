@@ -1,5 +1,5 @@
 class Folder < ApplicationRecord
-  PATH_FORMAT = /\A(?!\.\/)(\S+(?:\s+\S+)*)?(\.[a-zA-Z0-9_\-\/]+)*\z/
+  PATH_FORMAT = /\A(?!\.\/)(?!.*\/.*\/)(\S+(?:\s+\S+)*)?(\.[a-zA-Z0-9_\-]+)?\/?\z/
 
   belongs_to :user
 
