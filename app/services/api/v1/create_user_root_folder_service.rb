@@ -1,28 +1,26 @@
 # frozen_string_literal: true
 
 class Api::V1::CreateUserRootFolderService
-  def initialize user_id
-    @user_id = user_id
+  def initialize user_token
+    @user_token = user_token
   end
 
   def perform
-    initialize_bucket
     create_folder
   end
 
   private
 
-  attr_reader :user_id, :bucket_name
-
-  def initialize_bucket
-    @bucket = Api::V1::GetCurrentBucketService.new.perform
-  end
+  attr_reader :user_token
 
   def create_folder
-    return unless user_id.is_a? Numeric
+    return false unless user_token.is_a? String
 
-    folder_key = "#{user_id}/"
+    bucket = Api::V1::GetCurrentBucketService.new.perform
 
-    @bucket.object(folder_key).put(body: "")
+    folder_key = "#{user_token}/"
+
+    return true if bucket.object(folder_key).put(body: '')
+    false
   end
 end
