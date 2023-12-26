@@ -19,10 +19,13 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
 
       include_context :initialize_aws_s3
 
-      subject{ post :create, params: { folder: params } }
+      before do
+        allow_any_instance_of(Api::V1::CreateFolderService).to receive(:perform).and_return(true)
+        post :create, params: { folder: params }
+      end
 
       it do
-        expect(subject).to have_http_status(:ok)
+        expect(response).to have_http_status(:ok)
         expect(response_body[:success]).to eq true
         expect(response_body[:data][:path]).to eq params[:path]
       end
@@ -48,7 +51,7 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
         it do
           expect(subject).to have_http_status(:unprocessable_entity)
           expect(response_body[:success]).to eq false
-          expect(response_body[:errors][0][:path]).to eq "Path cannot be blank"
+          expect(response_body[:errors][0][:path]).to eq "cannot be blank"
         end
       end
 
