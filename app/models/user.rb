@@ -5,7 +5,7 @@ class User < ApplicationRecord
 
   has_many :folders
 
-  before_save :generate_unique_token
+  before_create :generate_unique_token
 
   validates :email, presence: true, uniqueness: true,
             format: {

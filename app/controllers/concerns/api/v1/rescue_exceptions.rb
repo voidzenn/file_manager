@@ -39,7 +39,7 @@ module Api
         )
         rescue_from(
           ActionController::UnpermittedParameters,
-          with: :rescue_unpermited_parameters
+          with: :rescue_unpermitted_parameters
         )
       end
 
@@ -99,7 +99,7 @@ module Api
         render json: response_body, status: :internal_server_error
       end
 
-      def rescue_unpermited_parameters error
+      def rescue_unpermitted_parameters error
         render json: I18n.t("errors.params.unpermitted"),
                status: :unprocessable_entity
       end

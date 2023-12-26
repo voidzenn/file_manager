@@ -17,7 +17,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
     @folder.update!(path: folder_update_params[:new_path])
 
     rename_folder = Api::V1::RenameFolderService.new(current_user_unique_token,
-                                                     folder_update_params[:old_path],
+                                                     @folder.path,
                                                      folder_update_params[:new_path])
 
     render_jsonapi success_update_response if rename_folder.perform
@@ -30,12 +30,12 @@ class Api::V1::FoldersController < Api::V1::BaseController
   end
 
   def folder_update_params
-    params.require(:folder).permit(:old_path, :new_path)
+    params.require(:folder).permit(:unique_token, :new_path)
   end
 
   def find_folder
     @folder ||= Folder.find_by!(user_id: current_user_id,
-                                path: folder_update_params[:old_path])
+                                unique_token: folder_update_params[:unique_token])
   end
 
   def success_response
