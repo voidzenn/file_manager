@@ -7,4 +7,8 @@ class Api::V1::BaseController < ApplicationController
   def current_user_id
     @current_user_id = @current_user.id
   end
+
+  def current_user_unique_token
+    @current_user_unique_token = @current_user.unique_token
+  end
 end
