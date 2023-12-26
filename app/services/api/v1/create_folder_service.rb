@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 class Api::V1::CreateFolderService
-  def initialize user_id, path
-    @user_id = user_id
+  def initialize user_token, path
+    @user_token = user_token
     @path = path
   end
 
@@ -13,7 +13,7 @@ class Api::V1::CreateFolderService
 
   private
 
-  attr_reader :user_id, :path
+  attr_reader :user_token, :path
 
   def load_bucket
     @bucket = Api::V1::GetCurrentBucketService.new.perform
@@ -23,11 +23,13 @@ class Api::V1::CreateFolderService
     return if path.starts_with? "/"
     return unless path.ends_with? "/"
 
-    @bucket.object(folder_key!).put(body: "")
+    @bucket.object(folder_key).put(body: "")
+
+    true
   end
 
-  def folder_key!
+  def folder_key
     # Should start with / to locate folder
-    "/#{user_id}/#{path}"
+    "/#{user_token}/#{path}"
   end
 end
