@@ -15,7 +15,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
 
     it "return #{field_name} error message" do
       expect(response_body[:success]).to eq false
-      expect(response_body[:errors][0][field_name.to_sym]).to eq "#{field_name.humanize} cannot be blank"
+      expect(response_body[:errors][0][field_name.to_sym]).to eq "cannot be blank"
       expect(response).to have_http_status(:unprocessable_entity)
     end
   end
@@ -83,7 +83,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         end
 
         it "return email is invalid error message" do
-          expect(response_body[:errors][0][:email]).to eq "Email is invalid"
+          expect(response_body[:errors][0][:email]).to eq "is invalid"
         end
       end
 
@@ -103,7 +103,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         end
 
         it do
-          expect(response_body[:errors][0][:email]).to eq "Email already exists"
+          expect(response_body[:errors][0][:email]).to eq "already exists"
         end
       end
     end

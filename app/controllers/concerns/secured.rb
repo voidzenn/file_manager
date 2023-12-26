@@ -14,7 +14,7 @@ module Secured
   end
 
   def load_user
-    User.find(jwt_token.id)
+    User.find_by(unique_token: jwt_token.id)
   rescue ActiveRecord::RecordNotFound
     raise Api::Error::UnauthorizedError, nil
   end

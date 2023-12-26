@@ -48,4 +48,14 @@ RSpec.describe User, type: :model do
       end
     end
   end
+
+  describe '#before_save' do
+    describe '#generate_unique_token' do
+      let(:user) { create :user }
+
+      it do
+        expect(user.unique_token).to be_present
+      end
+    end
+  end
 end
