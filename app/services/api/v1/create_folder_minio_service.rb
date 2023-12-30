@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Api::V1::CreateFolderService
+class Api::V1::CreateFolderMinioService
   def initialize user_token, path
     @user_token = user_token
     @path = path

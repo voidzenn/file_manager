@@ -8,7 +8,7 @@ class Folder < ApplicationRecord
   validates :path, presence: true
   validate :validate_path_format
   validate :validate_path_uniqueness, if: -> { path_changed? }
-  validate :validate_new_path, on: :update
+  validate :validate_path_not_changed, on: :update
 
   private
 
@@ -30,7 +30,7 @@ class Folder < ApplicationRecord
     child_path_uniqueness
   end
 
-  def validate_new_path
+  def validate_path_not_changed
     if path.present? && !path_changed?
       errors.add(:path, I18n.t('errors.models.folder.same_as_previous_path_name.message'))
     end

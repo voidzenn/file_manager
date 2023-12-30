@@ -23,7 +23,7 @@ RSpec.describe Folder, type: :model do
 
         it 'should allow new path name' do
           expect(described_class.new(user_id: user.id, path: 'new path/')).to be_valid
-        end
+        end 
 
         it 'should not allow same path name' do
           new_folder = described_class.new(user_id: user.id, path: 'old path/')
@@ -42,8 +42,12 @@ RSpec.describe Folder, type: :model do
           expect(described_class.new(user_id: user.id, parent_folder_id: parent_folder.id, path: 'new child path/')).to be_valid
         end
 
+        it 'should allow same name path with different parent_folder_id' do
+          expect(described_class.new(user_id: user.id, parent_folder_id: current_folder.id, path: 'current path/')).to be_valid
+        end
+
         it 'should not allow same path name' do
-          new_folder = described_class.new(user_id: user.id, parent_folder_id: parent_folder.id, path: 'current path/')
+          new_folder = described_class.create(user_id: user.id, parent_folder_id: parent_folder.id, path: 'current path/')
 
           expect(new_folder).to_not be_valid
           expect(new_folder.errors[:path]).to include(I18n.t('errors.models.folder.uniqueness.message'))

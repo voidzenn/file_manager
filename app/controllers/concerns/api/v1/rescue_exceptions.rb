@@ -55,8 +55,10 @@ module Api
         render json: response_body, status: :unprocessable_entity
       end
 
-      def rescue_not_found
-        render json: {}, status: :not_found
+      def rescue_not_found error
+        log_error error.message
+
+        render json: { error: 'Not found' }, status: :not_found
       end
 
       def rescue_unauthorized error
@@ -100,8 +102,14 @@ module Api
       end
 
       def rescue_unpermitted_parameters error
+        log_error error.message
+
         render json: I18n.t("errors.params.unpermitted"),
                status: :unprocessable_entity
+      end
+
+      def log_error message
+        Log::Error.log_now(message)
       end
     end
   end
