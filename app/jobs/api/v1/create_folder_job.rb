@@ -3,20 +3,20 @@
 class Api::V1::CreateFolderJob < ApplicationJob
   queue_as :default
 
-  def perform params = {}
-    full_path = Api::V1::CreateFolderTraversalService.new(
-      params[:user_id],
-      params[:parent_folder],
-      params[:path_name]
-    ).perform
+  def perform args = {}
+    ActiveRecord::Base.transaction do
+      Api::V1::CreateFolderService.new(params).perform
 
-    @result = Api::V1::CreateFolderMinioService.new(
-      params[:user_token],
-      full_path
-    ).perform
-  end
+      full_path = Api::V1::CreateFolderTraversalService.new(
+        args[:user_id],
+        args[:parent_folder],
+        args[:params][:path]
+      ).perform
 
-  after_perform do |job|
-    puts "Processed data: #{@result}"
+      Api::V1::CreateFolderMinioService.new(
+        args[:user_token],
+        full_path
+      ).perform
+    end
   end
 end

@@ -24,7 +24,7 @@ class Api::V1::CreateFolderTraversalService
     current_parent_folder = parent_folder
 
     while current_parent_folder&.parent_folder_id&.present?
-      current_parent_folder = Folder.find_by(id: current_parent_folder.parent_folder_id,
+      current_parent_folder = Folder.find_by!(id: current_parent_folder.parent_folder_id,
                                              user_id: user_id)
 
       paths.unshift(current_parent_folder.path)

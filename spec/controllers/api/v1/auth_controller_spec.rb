@@ -15,7 +15,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
 
     it "return #{field_name} error message" do
       expect(response_body[:success]).to eq false
-      expect(response_body[:errors][0][field_name.to_sym]).to eq "cannot be blank"
+      expect(response_body[:error][0][field_name.to_sym]).to eq "cannot be blank"
       expect(response).to have_http_status(:unprocessable_entity)
     end
   end
@@ -57,7 +57,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
 
         it do
           expect(response).to have_http_status(:bad_request)
-          expect(response_body[:message]).to eq I18n.t("errors.params.missing.message")
+          expect(response_body[:error]).to eq I18n.t("errors.params.missing.message")
         end
       end
 
@@ -83,7 +83,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         end
 
         it "return email is invalid error message" do
-          expect(response_body[:errors][0][:email]).to eq "is invalid"
+          expect(response_body[:error][0][:email]).to eq "is invalid"
         end
       end
 
@@ -103,7 +103,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         end
 
         it do
-          expect(response_body[:errors][0][:email]).to eq "already exists"
+          expect(response_body[:error][0][:email]).to eq "already exists"
         end
       end
     end
@@ -145,7 +145,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
 
         it do
           expect(response).to have_http_status(:not_found)
-          expect(response.body).to eq "{}"
+          expect(response_body[:success]).to eq false
         end
       end
 
@@ -156,7 +156,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
 
         it do
           expect(response).to have_http_status(:bad_request)
-          expect(response_body[:message]).to eq "Parameter missing"
+          expect(response_body[:error]).to eq "Parameter missing"
         end
       end
 
@@ -171,7 +171,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
 
         it do
           expect(response).to have_http_status(:unauthorized)
-          expect(response_body[:message]).to eq "Email or Password is invalid"
+          expect(response_body[:error]).to eq "Email or Password is invalid"
         end
       end
 
@@ -186,7 +186,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
 
         it do
           expect(response).to have_http_status(:unauthorized)
-          expect(response_body[:message]).to eq "Email or Password is invalid"
+          expect(response_body[:error]).to eq "Email or Password is invalid"
         end
       end
     end

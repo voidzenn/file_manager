@@ -10,7 +10,7 @@ class Api::V1::AuthController < Api::V1::BaseController
     ActiveRecord::Base.transaction do
       @user.save
 
-      create_folder = Api::V1::CreateUserRootFolderService.new(@user.unique_token)
+      create_folder = Api::V1::CreateUserRootFolderMinioService.new(@user.unique_token)
 
       raise ActiveRecord::Rollback && create_folder_error_response unless create_folder.perform
 

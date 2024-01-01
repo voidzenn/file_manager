@@ -8,19 +8,14 @@ class Api::V1::FoldersController < Api::V1::BaseController
 
     find_parent_folder
 
-    ActiveRecord::Base.transaction do
-      @folder = Folder.new(folder_params_without_parent_unique_token)
-      @folder.save!
-    end
-
-    create_folder = Api::V1::CreateFolderJob.perform_now(
+    result = Api::V1::CreateFolderJob.perform_now(
+      params: folder_params_without_parent_unique_token,
       user_id: current_user_id,
       user_token: current_user_unique_token,
       parent_folder: @parent_folder,
-      path_name: folder_params[:path]
     )
 
-    render_jsonapi success_response if create_folder
+    render_jsonapi success_response if result
   end
 
   def rename
@@ -60,22 +55,18 @@ class Api::V1::FoldersController < Api::V1::BaseController
   end
 
   def create_root_folder
-    ActiveRecord::Base.transaction do
-      @folder = Folder.new(folder_params.merge(user_id: current_user_id))
-      @folder.save!
-    end
-
-    create_folder = Api::V1::CreateRootFolderJob.perform_now(
+    Api::V1::CreateRootFolderJob.perform_now(
+      folder_params.merge(user_id: current_user_id),
       current_user_unique_token,
       folder_params[:path]
     )
 
-    render_jsonapi success_response if create_folder
+    render_jsonapi success_response
   end
 
   def success_response
     {
-      path: @folder.path
+      path: folder_params[:path] || folder_params_without_parent_unique_token[:path]
     }
   end
 
