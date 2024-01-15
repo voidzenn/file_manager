@@ -9,6 +9,7 @@ module Api
         rescue_from(
           ActionController::ParameterMissing,
           JSON::ParserError,
+          ArgumentError,
           with: :rescue_parameter_missing
         )
         rescue_from(
@@ -41,6 +42,12 @@ module Api
           ActionController::UnpermittedParameters,
           with: :rescue_unpermitted_parameters
         )
+        rescue_from(
+          JWT::DecodeError,
+          JWT::VerificationError,
+          with: :rescue_invalid_token
+        )
+        rescue_from JWT::ExpiredSignature, with: :rescue_expired_token
       end
 
       private
@@ -114,6 +121,14 @@ module Api
         log_error error.message
 
         render_error_response I18n.t("errors.params.unpermitted.message"), :unprocessable_entity
+      end
+
+      def rescue_invalid_token
+        render_error_response 'Invalid Token', :unauthorized
+      end
+
+      def rescue_expired_token
+        render_error_response 'Token has expired', :unauthorized
       end
 
       def render_error_response message, status, details = nil

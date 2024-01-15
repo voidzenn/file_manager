@@ -4,7 +4,7 @@ en:
       missing:
         message: "Parameter missing"
       unpermitted:
-        message: "Unprocessable Entity"
+        message: "Unpermitted Parameter"
     messages:
       required: "must exist"
       blank: "cannot be blank"
