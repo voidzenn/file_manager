@@ -14,7 +14,7 @@ class Api::V1::CreateFolderService
   attr_reader :params
 
   def create_folder
-    folder = Folder.create(params)
+    folder = Folder.new(params)
     folder.save!
   end
 end

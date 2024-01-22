@@ -14,7 +14,7 @@ class Api::V1::AuthController < Api::V1::BaseController
 
       raise ActiveRecord::Rollback && create_folder_error_response unless create_folder.perform
 
-      render_jsonapi sign_up_response
+      render_jsonapi sign_up_response, status: :created
     end
   end
 

@@ -15,7 +15,7 @@ Rails.application.routes.draw do
 
       resources :folders, only: [:create] do
         collection do
-          post :rename, to: "folders#rename"
+          put :rename, to: "folders#rename"
         end
       end
 
