@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe Api::V1::CreateUserRootFolderService do
+RSpec.describe Api::V1::CreateUserRootFolderMinioService do
   describe "#perform" do
     context "when create user root folder successfully" do
       let!(:user) { create :user }

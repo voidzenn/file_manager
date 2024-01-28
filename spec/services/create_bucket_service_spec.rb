@@ -2,10 +2,10 @@
 
 require "rails_helper"
 
-RSpec.describe Api::V1::CreateBucketService do
+RSpec.describe CreateBucketService do
   describe "#perform" do
     let(:bucket_name) { "new-bucket" }
-    let(:service) { Api::V1::CreateBucketService.new(bucket_name) }
+    let(:service) { described_class.new(bucket_name) }
 
     context "when bucket created successfully" do
       before do

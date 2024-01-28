@@ -18,6 +18,7 @@ module FileManager
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+    config.active_job.queue_adapter = :sidekiq
     config.i18n.load_path += Dir[Rails.root.join("config/locales/**/*.{rb,yml}")]
     config.i18n.default_locale = :en
     config.hosts << "www.example.com"

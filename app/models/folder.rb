@@ -3,15 +3,24 @@ class Folder < ApplicationRecord
 
   belongs_to :user
 
+  before_create :generate_unique_token
+
   validates :path, presence: true
   validate :validate_path_format
-  validate :validate_path_uniqueness
+  validate :validate_path_uniqueness, if: -> { path_changed? }
+  validate :validate_path_not_changed
 
   private
 
+  def generate_unique_token
+    self.unique_token = SecureRandom.hex(10)
+
+    generate_unique_token if self.class.exists?(unique_token: self.unique_token)
+  end
+
   def validate_path_format
-    if path.present? && ((path.start_with?("/") || !path.ends_with?("/")) || !path.match?(PATH_FORMAT))
-      errors.add(:path, I18n.t("errors.models.folder.format.message"))
+    if path.present? && ((path.start_with?('/') || !path.ends_with?('/')) || !path.match?(PATH_FORMAT))
+      errors.add(:path, I18n.t('errors.models.folder.format.message'))
     end
   end
 
@@ -19,6 +28,12 @@ class Folder < ApplicationRecord
     return root_path_uniqueness if parent_folder_id.nil?
 
     child_path_uniqueness
+  end
+
+  def validate_path_not_changed
+    if persisted? && path.present? && !path_changed?
+      errors.add(:path, I18n.t('errors.models.folder.same_as_previous_path_name.message'))
+    end
   end
 
   def root_path_uniqueness

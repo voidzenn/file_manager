@@ -1,14 +1,15 @@
 version: '3.3'
 services:
   db:
-    image: mysql:8.0
-    container_name: mysql_db
+    image: postgres:latest
+    container_name: postgres
     ports:
-      - 3307:3306
+      - 5432:5432
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
     volumes:
-      - file_manager:/var/lib/mysql
+      - file_manager:/var/lib/postgresql/data
   minio:
     image: minio/minio
     container_name: minio

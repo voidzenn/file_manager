@@ -21,25 +21,7 @@ module Secured
 
   def jwt_token
     token = request.headers["Authorization"].split(" ").last
-    decoded = decode_token token
 
-    raise Api::Error::UnauthorizedError, nil if decoded.nil?
-
-    decoded
-  end
-
-  def decode_token token
     JsonWebToken.decode token
-  rescue JWT::DecodeError
-    render_error_response 'Invalid token'
-  rescue  JWT::ExpiredSignature
-    render_error_response 'Token has expired'
-  end
-
-  def render_error_response message
-    render json: {
-      success: false,
-      token: message,
-    }, status: :unauthorized
   end
 end

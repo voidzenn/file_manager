@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Api::V1::CreateUserRootFolderService
+class Api::V1::CreateUserRootFolderMinioService
   def initialize user_token
     @user_token = user_token
   end

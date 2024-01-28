@@ -4,7 +4,7 @@ en:
       missing:
         message: "Parameter missing"
       unpermitted:
-        message: "Unprocessable Entity"
+        message: "Unpermitted Parameter"
     messages:
       required: "must exist"
       blank: "cannot be blank"
@@ -25,3 +25,5 @@ en:
           message: "should only contain alphanumeric characters, spaces, underscores and hyphens for the name, should end with a forward slash."
         uniqueness:
           message: "already exists"
+        same_as_previous_path_name:
+          message: "should not be the same as previous path name"
