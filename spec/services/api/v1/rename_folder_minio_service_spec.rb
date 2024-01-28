@@ -12,19 +12,33 @@ RSpec.describe Api::V1::RenameFolderMinioService do
     let(:new_prefix) { "new_path/" }
     let(:new_prefix_with_user_id) { "#{user.id}/#{new_prefix}" }
     let(:service) { described_class.new(user.id, old_prefix, new_prefix) }
-    let(:bucket_double) { double('bucket') }
-
-    it 'should rename and delete successfully' do
-      allow(Api::V1::GetCurrentBucketService).to receive(:new).and_return(double(perform: bucket_double))
-      allow_any_instance_of(described_class).to receive(:perform).and_return(true)
-
-      expect(service.perform).to eq true
+    let(:object_bucket_name) { double('ObjectBucket', bucket_name: '') }
+    let(:object_double) do
+      double('Object', bucket_name: object_bucket_name, key: old_prefix, sub: new_prefix)
+    end
+    let(:objects_double) do
+      double('Objects').tap do |objects|
+        allow(objects).to receive(:each).and_yield(object_double)
+      end
     end
 
-    it 'should raise error' do
-      allow(Api::V1::GetCurrentBucketService).to receive(:new).and_raise(Aws::S3::Errors::ServiceError.new({}, 'S3 error'))
+    context 'when renaming root folder' do
+      before do
+        allow_any_instance_of(Api::V1::GetCurrentBucketService).to receive(:perform).and_return(double(objects: objects_double))
+      end
 
-      expect{ service.perform }.to raise_error(Aws::S3::Errors::ServiceError)
+      it 'should rename and delete successfully' do
+        allow(object_double).to receive(:copy_to)
+        allow(object_double).to receive(:delete)
+
+        expect(service.perform).to eq true
+      end
+
+      it 'should raise error' do
+        allow(object_double).to receive(:copy_to).and_raise(StandardError, 'Error deleting folder')
+
+        expect{ service.perform }.to raise_error(StandardError)
+      end
     end
   end
 end
