@@ -4,12 +4,13 @@ en:
       missing:
         message: "Parameter missing"
       unpermitted:
-        message: "Unprocessable Entity"
+        message: "Unpermitted Parameter"
     messages:
-      blank: "%{attribute} cannot be blank"
-      invalid: "%{attribute} is invalid"
-      taken: "%{attribute} already exists"
-      not_a_number: "%{attribute} is not a number"
+      required: "must exist"
+      blank: "cannot be blank"
+      invalid: "is invalid"
+      taken: "already exists"
+      not_a_number: "is not a number"
     unauthorized:
       default:
         message: "Unauthorized"
@@ -21,6 +22,8 @@ en:
     models:
       folder:
         format:
-          message: "Must not start with / and must end with /"
+          message: "should only contain alphanumeric characters, spaces, underscores and hyphens for the name, should end with a forward slash."
         uniqueness:
-          message: "Path already exists"
+          message: "already exists"
+        same_as_previous_path_name:
+          message: "should not be the same as previous path name"

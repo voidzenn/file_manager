@@ -1,20 +1,54 @@
 class Folder < ApplicationRecord
+  PATH_FORMAT = /\A(?!\.\/)(?!.*\/.*\/)(\S+(?:\s+\S+)*)?(\.[a-zA-Z0-9_\-]+)?\/?\z/
+
   belongs_to :user
 
-  validates :user_id, numericality: { only_integer: true, greater_than: 0 }
-  validates :path, presence: true,
-            uniqueness: {
-              scope: :user_id,
-              case_sensitive: true,
-              message: I18n.t("errors.models.folder.uniqueness.message")
-            }
-  validate :path_format
+  before_create :generate_unique_token
+
+  validates :path, presence: true
+  validate :validate_path_format
+  validate :validate_path_uniqueness, if: -> { path_changed? }
+  validate :validate_path_not_changed
 
   private
 
-  def path_format
-    if path.present? && (path.start_with?("/") || !path.ends_with?("/"))
-      errors.add(:path, I18n.t("errors.models.folder.format.message"))
+  def generate_unique_token
+    self.unique_token = SecureRandom.hex(10)
+
+    generate_unique_token if self.class.exists?(unique_token: self.unique_token)
+  end
+
+  def validate_path_format
+    if path.present? && ((path.start_with?('/') || !path.ends_with?('/')) || !path.match?(PATH_FORMAT))
+      errors.add(:path, I18n.t('errors.models.folder.format.message'))
     end
+  end
+
+  def validate_path_uniqueness
+    return root_path_uniqueness if parent_folder_id.nil?
+
+    child_path_uniqueness
+  end
+
+  def validate_path_not_changed
+    if persisted? && path.present? && !path_changed?
+      errors.add(:path, I18n.t('errors.models.folder.same_as_previous_path_name.message'))
+    end
+  end
+
+  def root_path_uniqueness
+    unless self.class.find_by(user_id: user_id, path: path).nil?
+      path_uniqueness_error
+    end
+  end
+
+  def child_path_uniqueness
+    unless self.class.find_by(user_id: user_id, parent_folder_id: parent_folder_id, path: path).nil?
+      path_uniqueness_error
+    end
+  end
+
+  def path_uniqueness_error
+    errors.add(:path, I18n.t("errors.models.folder.uniqueness.message"))
   end
 end

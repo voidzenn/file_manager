@@ -7,16 +7,20 @@ class Api::V1::AuthController < Api::V1::BaseController
 
     raise ActiveRecord::RecordInvalid, @user unless @user.valid?
 
-    # Create new root folder for user
-    Api::V1::CreateUserRootFolderService.new(@user.id).perform
+    ActiveRecord::Base.transaction do
+      @user.save
 
-    @user.save
-    render_jsonapi sign_up_response
+      create_folder = Api::V1::CreateUserRootFolderMinioService.new(@user.unique_token)
+
+      raise ActiveRecord::Rollback && create_folder_error_response unless create_folder.perform
+
+      render_jsonapi sign_up_response, status: :created
+    end
   end
 
   def sign_in
     if @user && @user.authenticate(params[:password])
-      @token = JsonWebToken.encode @user.id
+      @token = JsonWebToken.encode @user.unique_token
 
       sign_in_response
     else
@@ -60,5 +64,11 @@ class Api::V1::AuthController < Api::V1::BaseController
     }
 
     render_jsonapi response_data, meta
+  end
+
+  def create_folder_error_response
+    error_message = { message: 'User root folder not created, try again' }
+
+    render_jsonapi error_message, status: :unprocessable_entity
   end
 end

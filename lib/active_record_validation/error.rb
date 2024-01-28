@@ -6,15 +6,6 @@ module ActiveRecordValidation
       @record = record
     end
 
-    def to_hash
-      {
-        success: false,
-        errors: serialize_errors
-      }
-    end
-
-    private
-
     def serialize_errors
       errors = []
       full_message = @record.errors.to_hash
