@@ -22,7 +22,7 @@ RSpec.describe Api::V1::FolderTraversalService do
         let(:expected_full_path) { parent_folder.path + second_level_folder.path + new_prefix }
 
         it 'should return only new full path' do
-          expect(service[:new_path]).to eq expected_full_path
+          expect(service[:new_full_path]).to eq expected_full_path
         end
       end
     end
@@ -46,8 +46,8 @@ RSpec.describe Api::V1::FolderTraversalService do
         let(:expected_old_full_path) { third_level_path + old_prefix }
 
         it 'should return both old and new full path' do
-          expect(service[:new_path]).to eq expected_new_full_path
-          expect(service[:old_path]).to eq expected_old_full_path
+          expect(service[:new_full_path]).to eq expected_new_full_path
+          expect(service[:old_full_path]).to eq expected_old_full_path
         end
       end
     end
