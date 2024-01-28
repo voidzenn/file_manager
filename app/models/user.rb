@@ -5,8 +5,6 @@ class User < ApplicationRecord
 
   has_many :folders
 
-  before_create :generate_unique_token
-
   validates :email, presence: true, uniqueness: true,
             format: {
               with: /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i
@@ -18,12 +16,4 @@ class User < ApplicationRecord
             }
   validates :fname, presence: true
   validates :lname, presence: true
-
-  private
-  
-  def generate_unique_token
-    self.unique_token = SecureRandom.hex(10)
-
-    generate_unique_token if self.class.exists?(unique_token: self.unique_token)
-  end
 end

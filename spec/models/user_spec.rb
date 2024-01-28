@@ -13,7 +13,7 @@ RSpec.describe User, type: :model do
     describe "attribute email" do
       it do
         is_expected.to validate_presence_of(:email)
-        is_expected.to validate_uniqueness_of(:email)
+        is_expected.to validate_uniqueness_of(:email).case_insensitive
 
         is_expected.to allow_value("user@example.com").for(:email)
         is_expected.to allow_value("user+label@example.com").for(:email)
@@ -45,16 +45,6 @@ RSpec.describe User, type: :model do
     describe "attribute lname" do
       it do
         is_expected.to validate_presence_of(:lname)
-      end
-    end
-  end
-
-  describe '#before_save' do
-    describe '#generate_unique_token' do
-      let(:user) { create :user }
-
-      it do
-        expect(user.unique_token).to be_present
       end
     end
   end

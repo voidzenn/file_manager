@@ -9,7 +9,6 @@ module Api
         rescue_from(
           ActionController::ParameterMissing,
           JSON::ParserError,
-          ArgumentError,
           with: :rescue_parameter_missing
         )
         rescue_from(
@@ -40,44 +39,33 @@ module Api
         )
         rescue_from(
           ActionController::UnpermittedParameters,
-          with: :rescue_unpermitted_parameters
+          with: :rescue_unpermited_parameters
         )
-        rescue_from(
-          JWT::DecodeError,
-          JWT::VerificationError,
-          with: :rescue_invalid_token
-        )
-        rescue_from JWT::ExpiredSignature, with: :rescue_expired_token
       end
 
       private
 
       def rescue_parameter_missing error
-        render_error_response(
-          I18n.t("errors.params.missing.message"),
-          :bad_request,
-          error.message
-        )
+        render json: I18n.t("errors.params.missing")
+          .merge({ details: error.message }), status: :bad_request
       end
 
       def rescue_bad_request error
-        errors = ActiveRecordValidation::Error.new(error.record).serialize_errors
-        render_error_response errors, :unprocessable_entity
+        response_body = ActiveRecordValidation::Error.new(error.record).to_hash
+        render json: response_body, status: :unprocessable_entity
       end
 
-      def rescue_not_found error
-        log_error error.message
-
-        render_error_response 'Not found', :not_found
+      def rescue_not_found
+        render json: {}, status: :not_found
       end
 
       def rescue_unauthorized error
         response_body = if error.message.nil?
-                          I18n.t("errors.unauthorized.default.message")
+                          I18n.t("errors.unauthorized.default")
                         else
-                          I18n.t("errors.unauthorized.#{error.message.to_s}.message")
+                          I18n.t("errors.unauthorized.#{error.message.to_s}")
                         end
-        render_error_response response_body, :unauthorized
+        render json: response_body, status: :unauthorized
       end
 
       def rescue_bucket_exists
@@ -89,16 +77,10 @@ module Api
       end
 
       def rescue_no_such_bucket
-        message = {
+        render json: {
           error: 'No such bucket exist',
           details: 'Run rake task'
-        }
-
-        render_error_response(
-          message[:error],
-          :internal_server_error,
-          message[:details]
-        )
+        }, status: :internal_server_error
       end
 
       def rescue_name_error
@@ -109,41 +91,17 @@ module Api
       end
 
       def rescue_internal_server_error error
-        message = if error.message.nil?
-                          I18n.t("errors.internal_server_error.default.message")
+        response_body = if error.message.nil?
+                          I18n.t("errors.internal_server_error.default")
                         else
                           I18n.t("errors.internal_server_error.#{error.message.to_s}")
                         end
-        render_error_response message, :internal_server_error
+        render json: response_body, status: :internal_server_error
       end
 
-      def rescue_unpermitted_parameters error
-        log_error error.message
-
-        render_error_response I18n.t("errors.params.unpermitted.message"), :unprocessable_entity
-      end
-
-      def rescue_invalid_token
-        render_error_response 'Invalid Token', :unauthorized
-      end
-
-      def rescue_expired_token
-        render_error_response 'Token has expired', :unauthorized
-      end
-
-      def render_error_response message, status, details = nil
-        error_data = {
-          success: false,
-          error: message,
-        }
-
-        error_data.merge!({details: details}) unless details.nil?
-
-        render json: error_data, status: status
-      end
-
-      def log_error message
-        Log.error(message)
+      def rescue_unpermited_parameters error
+        render json: I18n.t("errors.params.unpermitted"),
+               status: :unprocessable_entity
       end
     end
   end

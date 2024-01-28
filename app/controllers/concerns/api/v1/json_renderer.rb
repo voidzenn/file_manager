@@ -11,7 +11,7 @@ module Api
         def render_jsonapi object, options = {}
           success = options.fetch :success, true
           status = options.fetch :status, :ok
-          data = object.merge options.except!(:status)
+          data = object.merge options
 
           response_data = {
             success: success,

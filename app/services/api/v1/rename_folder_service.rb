@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-class Api::V1::RenameFolderMinioService
-  def initialize user_token, old_prefix, new_prefix
-    @user_token = user_token
+class Api::V1::RenameFolderService
+  def initialize user_id, old_prefix, new_prefix
+    @user_id = user_id
     @old_prefix = old_prefix
     @new_prefix = new_prefix
   end
@@ -14,7 +14,7 @@ class Api::V1::RenameFolderMinioService
 
   private
 
-  attr_reader :user_token, :old_prefix, :new_prefix
+  attr_reader :user_id, :old_prefix, :new_prefix
 
   def initialize_s3_objects
     bucket = Api::V1::GetCurrentBucketService.new.perform
@@ -32,15 +32,13 @@ class Api::V1::RenameFolderMinioService
       # Delete the folder with old prefix.
       obj.delete(bucket: obj.bucket_name, key: old_prefix)
     end
-
-    true
-  rescue => e
-    raise e
+  rescue Aws::S3::Errors::ServiceError => e
+    puts "Error while renaming folder: #{e.message}"
   end
 
   def format_prefix_keys
-    # Add the user_token to the prefix.
-    @old_prefix = "#{user_token}/#{old_prefix}"
-    @new_prefix = "#{user_token}/#{new_prefix}"
+    # Add the user_id to the prefix.
+    @old_prefix = "#{user_id}/#{old_prefix}"
+    @new_prefix = "#{user_id}/#{new_prefix}"
   end
 end

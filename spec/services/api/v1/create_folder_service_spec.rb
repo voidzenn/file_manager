@@ -1,8 +1,8 @@
-# frozen_string_literal: true
+# frozen_string_litera: true
 
 require "rails_helper"
 
-RSpec.describe Api::V1::CreateFolderMinioService do
+RSpec.describe Api::V1::CreateFolderService do
   describe "#perform" do
     let(:user) { create :user }
 
@@ -10,7 +10,7 @@ RSpec.describe Api::V1::CreateFolderMinioService do
 
     context "when folder create successfully" do
       let(:path) { "new_path/" }
-      let(:service) { Api::V1::CreateFolderMinioService.new(user.id, path) }
+      let(:service) { Api::V1::CreateFolderService.new(user.id, path) }
 
       it do
         expect(service.perform).to eq true
@@ -20,7 +20,7 @@ RSpec.describe Api::V1::CreateFolderMinioService do
     context "when folder create fails" do
       context 'when path starts with "/"' do
         let(:path) { "/new_path/" }
-        let(:service) { Api::V1::CreateFolderMinioService.new(user.id, path) }
+        let(:service) { Api::V1::CreateFolderService.new(user.id, path) }
 
         it do
           expect(service.perform).to be_nil
@@ -29,7 +29,7 @@ RSpec.describe Api::V1::CreateFolderMinioService do
 
       context 'when path not ends with "/"' do
         let(:path) { "new_path" }
-        let(:service) { Api::V1::CreateFolderMinioService.new(user.id, path) }
+        let(:service) { Api::V1::CreateFolderService.new(user.id, path) }
 
         it do
           expect(service.perform).to be_nil
