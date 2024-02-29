@@ -16,7 +16,7 @@ class Api::V1::CreateFolderJob < ApplicationJob
       Api::V1::CreateFolderService.new(params_with_full_path).perform
 
       Api::V1::CreateFolderMinioService.new(
-        args[:user_token],
+        args[:bucket_token],
         full_path[:new_full_path]
       ).perform
     end

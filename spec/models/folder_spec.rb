@@ -137,5 +137,11 @@ RSpec.describe Folder, type: :model do
         expect(described_class.new(user_id: user.id, path: '123123/abc/')).to_not be_valid
       end
     end
+
+    context 'attribute full_path' do
+      it do
+        is_expected.to validate_uniqueness_of(:full_path)
+      end
+    end
   end
 end

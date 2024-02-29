@@ -6,7 +6,7 @@ class Folder < ApplicationRecord
 
   before_create :generate_unique_token
 
-  validates :path, presence: true, uniqueness: true
+  validates :path, presence: true
   validates :full_path, uniqueness: { allow_blank: true }
   validate :validate_path_format
   validate :validate_path_uniqueness, if: -> { path_changed? }
