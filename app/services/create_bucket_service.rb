@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Api::V1::CreateBucketService
+class CreateBucketService
   def initialize bucket_name
     @bucket_name = bucket_name
   end

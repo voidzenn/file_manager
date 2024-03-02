@@ -23,7 +23,7 @@ RSpec.describe Folder, type: :model do
 
         it 'should allow new path name' do
           expect(described_class.new(user_id: user.id, path: 'new path/')).to be_valid
-        end
+        end 
 
         it 'should not allow same path name' do
           new_folder = described_class.new(user_id: user.id, path: 'old path/')
@@ -135,12 +135,6 @@ RSpec.describe Folder, type: :model do
 
       it 'should not accept double slashes' do
         expect(described_class.new(user_id: user.id, path: '123123/abc/')).to_not be_valid
-      end
-    end
-
-    context 'attribute full_path' do
-      it do
-        is_expected.to validate_uniqueness_of(:full_path)
       end
     end
   end

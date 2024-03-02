@@ -2,12 +2,10 @@ class Folder < ApplicationRecord
   PATH_FORMAT = /\A(?!\.\/)(?!.*\/.*\/)(\S+(?:\s+\S+)*)?(\.[a-zA-Z0-9_\-]+)?\/?\z/
 
   belongs_to :user
-  has_many :file_uploads
 
   before_create :generate_unique_token
 
   validates :path, presence: true
-  validates :full_path, uniqueness: { allow_blank: true }
   validate :validate_path_format
   validate :validate_path_uniqueness, if: -> { path_changed? }
   validate :validate_path_not_changed
