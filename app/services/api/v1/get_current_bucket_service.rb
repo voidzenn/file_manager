@@ -1,20 +1,16 @@
 # frozen_string_literal: true
 
 class Api::V1::GetCurrentBucketService
-  def initialize token
-    @token = token
-  end
-
   def perform
     load_bucket
   end
 
   private
 
-  attr_reader :token
-
   def load_bucket
+    bucket_name = ENV.fetch("AWS_BUCKET_NAME", "users")
+
     s3 = Aws::S3::Resource.new
-    s3.bucket(token)
+    s3.bucket(bucket_name)
   end
 end

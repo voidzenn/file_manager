@@ -4,17 +4,16 @@ require "rails_helper"
 
 RSpec.describe Api::V1::GetCurrentBucketService do
   describe "#perform" do
-    let!(:bucket_token) { create(:user).bucket_token }
-    let(:service) { Api::V1::GetCurrentBucketService.new(bucket_token).perform }
+    let(:service) { Api::V1::GetCurrentBucketService.new.perform }
 
     context "when bucket retrieved successfully" do
       before do
-        allow(ENV).to receive(:fetch).with("AWS_BUCKET_NAME", bucket_token).and_return(bucket_token)
+        allow(ENV).to receive(:fetch).with("AWS_BUCKET_NAME", "users").and_return("test_bucket")
       end
 
       it do
         expect(service).to be_an_instance_of(Aws::S3::Bucket)
-        expect(service.name).to eq bucket_token
+        expect(service.name).to eq "test_bucket"
       end
     end
 

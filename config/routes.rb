@@ -19,8 +19,6 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :file_uploads, only: [:create]
-
       match "*path", to: "route_error#not_found", via: :all
     end
   end
