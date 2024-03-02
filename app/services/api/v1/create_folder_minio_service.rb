@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 class Api::V1::CreateFolderMinioService
-  def initialize user_token, path
-    @user_token = user_token
+  def initialize bucket_token, path
+    @bucket_token = bucket_token
     @path = path
   end
 
@@ -13,23 +13,18 @@ class Api::V1::CreateFolderMinioService
 
   private
 
-  attr_reader :user_token, :path
+  attr_reader :bucket_token, :path
 
   def load_bucket
-    @bucket = Api::V1::GetCurrentBucketService.new.perform
+    @bucket = Api::V1::GetCurrentBucketService.new(bucket_token).perform
   end
 
   def create_folder
     return if path.starts_with? "/"
     return unless path.ends_with? "/"
 
-    @bucket.object(folder_key).put(body: "")
+    @bucket.object(path).put(body: "")
 
     true
-  end
-
-  def folder_key
-    # Should start with / to locate folder
-    "/#{user_token}/#{path}"
   end
 end

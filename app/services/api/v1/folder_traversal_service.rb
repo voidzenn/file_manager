@@ -35,15 +35,20 @@ class Api::V1::FolderTraversalService
   end
 
   def load_full_path
-    path = full_parent_path.join("")
-    new_path = {
-      new_path: path + new_prefix
+    @path = full_parent_path.join("")
+    full_paths = {
+      new_full_path: new_full_path,
+      old_full_path: old_full_path
     }
 
-    unless old_prefix.nil?
-      new_path.merge!(old_path: path + old_prefix)
-    end
+    full_paths
+  end
 
-    new_path
+  def new_full_path
+    @path + new_prefix
+  end
+
+  def old_full_path
+    @path + (old_prefix || '')
   end
 end
