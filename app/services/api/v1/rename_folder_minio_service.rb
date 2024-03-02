@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 class Api::V1::RenameFolderMinioService
-  def initialize bucket_token, old_prefix, new_prefix
-    @bucket_token = bucket_token
+  def initialize user_token, old_prefix, new_prefix
+    @user_token = user_token
     @old_prefix = old_prefix
     @new_prefix = new_prefix
   end
@@ -14,10 +14,12 @@ class Api::V1::RenameFolderMinioService
 
   private
 
-  attr_reader :bucket_token, :old_prefix, :new_prefix
+  attr_reader :user_token, :old_prefix, :new_prefix
 
   def initialize_s3_objects
-    bucket = Api::V1::GetCurrentBucketService.new(bucket_token).perform
+    bucket = Api::V1::GetCurrentBucketService.new.perform
+
+    format_prefix_keys
 
     @objects = bucket.objects(prefix: old_prefix)
   end
@@ -34,5 +36,11 @@ class Api::V1::RenameFolderMinioService
     true
   rescue => e
     raise e
+  end
+
+  def format_prefix_keys
+    # Add the user_token to the prefix.
+    @old_prefix = "#{user_token}/#{old_prefix}"
+    @new_prefix = "#{user_token}/#{new_prefix}"
   end
 end
