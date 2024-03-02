@@ -101,8 +101,15 @@ module Api
         )
       end
 
-      def rescue_name_error
-        # No action is taken, error is silently handled
+      def rescue_name_error error
+        message = {
+          error: error.message
+        }
+
+        render_error_response(
+          message[:error],
+          :internal_server_error
+        )
       end
 
       def rescue_unprocessable_entity error

@@ -5,8 +5,6 @@ class Api::V1::RenameFolderJob < ApplicationJob
 
   def perform args = {}
     ActiveRecord::Base.transaction do
-      args[:folder_object].update!(path: args[:new_path])
-
       full_paths = Api::V1::FolderTraversalService.new(
         user_id: args[:user_id],
         parent_folder_object: args[:parent_folder_object],
@@ -14,10 +12,15 @@ class Api::V1::RenameFolderJob < ApplicationJob
         old_prefix: args[:path]
       ).perform
 
+      args[:folder_object].update!(
+        path: args[:new_path],
+        full_path: full_paths[:new_full_path]
+      )
+
       result = Api::V1::RenameFolderMinioService.new(
-        args[:user_token],
-        full_paths[:old_path],
-        full_paths[:new_path]
+        args[:bucket_token],
+        full_paths[:old_full_path],
+        full_paths[:new_full_path]
       ).perform
 
       result

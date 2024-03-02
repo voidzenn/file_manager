@@ -11,7 +11,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
     Api::V1::CreateFolderJob.perform_now(
       params: folder_params_without_parent_unique_token,
       user_id: current_user_id,
-      user_token: current_user_unique_token,
+      bucket_token: current_user_bucket_token,
       parent_folder_object: @parent_folder,
     )
 
@@ -25,7 +25,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
 
     Api::V1::RenameFolderJob.perform_now(
       user_id: current_user_id,
-      user_token: current_user_unique_token,
+      bucket_token: current_user_bucket_token,
       folder_object: @folder,
       parent_folder_object: @parent_folder,
       path: @folder.path,
@@ -66,7 +66,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
   def create_root_folder
     Api::V1::CreateRootFolderJob.perform_now(
       folder_params.merge(user_id: current_user_id),
-      current_user_unique_token,
+      current_user_bucket_token,
       folder_params[:path]
     )
 
@@ -75,7 +75,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
 
   def rename_root_folder
     Api::V1::RenameRootFolderJob.perform_now(
-      user_token: current_user_unique_token,
+      bucket_token: current_user_bucket_token,
       folder_object: @folder,
       path: @folder.path,
       new_path: folder_update_params[:new_path]
