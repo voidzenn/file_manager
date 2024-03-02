@@ -5,14 +5,14 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
 
   def create
     @filename = file_upload_params[:file_upload].original_filename
-    @full_path = @folder.full_path + @filename
-    full_file_path = "#{current_user_unique_token}/#{@full_path}"
+    @full_path = @folder.full_path.to_s + @filename.to_s
 
     Api::V1::UploadFileJob.perform_now(
-      user_token: current_user_unique_token,
+      bucket_token: current_user_bucket_token,
       folder_object: @folder,
       file: file_upload_params[:file_upload],
-      full_file_path: full_file_path
+      filename: @filename,
+      full_file_path: @full_path
     )
 
     render_jsonapi success_response

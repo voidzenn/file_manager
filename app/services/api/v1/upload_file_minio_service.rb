@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 class Api::V1::UploadFileMinioService
-  def initialize user_token, full_file_path, file
-    @user_token = user_token
+  def initialize bucket_token, full_file_path, file
+    @bucket_token = bucket_token
     @full_file_path = full_file_path
     @file = file
   end
@@ -13,10 +13,10 @@ class Api::V1::UploadFileMinioService
 
   private
 
-  attr_reader :user_token, :full_file_path, :file
+  attr_reader :bucket_token, :full_file_path, :file
 
   def upload_file
-    bucket = Api::V1::GetCurrentBucketService.new.perform
+    bucket = Api::V1::GetCurrentBucketService.new(bucket_token).perform
     object = bucket.object(full_file_path)
 
     object.upload_file(file.path)

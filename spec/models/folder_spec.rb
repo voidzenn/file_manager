@@ -23,7 +23,7 @@ RSpec.describe Folder, type: :model do
 
         it 'should allow new path name' do
           expect(described_class.new(user_id: user.id, path: 'new path/')).to be_valid
-        end 
+        end
 
         it 'should not allow same path name' do
           new_folder = described_class.new(user_id: user.id, path: 'old path/')
