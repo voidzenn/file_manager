@@ -8,7 +8,7 @@ class Api::V1::RenameRootFolderJob < ApplicationJob
       args[:folder_object].update!(path: args[:new_path])
 
       result = Api::V1::RenameFolderMinioService.new(
-        args[:user_token],
+        args[:bucket_token],
         args[:path],
         args[:new_path]
       ).perform
