@@ -13,7 +13,7 @@ Rails.application.routes.draw do
       post "/auth/sign_up", to: "auth#sign_up"
       post "/auth/sign_in", to: "auth#sign_in"
 
-      resources :folders, only: [:create] do
+      resources :folders, only: [:index, :create] do
         collection do
           put :rename, to: "folders#rename"
         end
