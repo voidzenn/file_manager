@@ -3,6 +3,18 @@
 class Api::V1::FoldersController < Api::V1::BaseController
   before_action :find_folder, only: :rename
 
+  def index
+    @pagy, @folders = pagy(Folder.all.order_by_date)
+
+    render_jsonapi(
+      ActiveModel::Serializer::CollectionSerializer.new(
+        @folders,
+        serializer: Api::V1::FolderSerializer
+      ),
+      meta: pagy_metadata(@pagy)
+    )
+  end
+
   def create
     return create_root_folder if folder_params[:parent_unique_token].nil?
 
