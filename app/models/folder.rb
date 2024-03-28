@@ -6,6 +6,8 @@ class Folder < ApplicationRecord
 
   before_create :generate_unique_token
 
+  scope :order_by_date, -> { order(created_at: :desc) }
+
   validates :path, presence: true
   validates :full_path, uniqueness: { allow_blank: true }
   validate :validate_path_format
