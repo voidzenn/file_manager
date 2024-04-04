@@ -126,7 +126,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
 
       it do
         expect(response_body[:success]).to eq true
-        expect(response_body[:data][:meta][:token]).to eq assigns(:token)
+        expect(response_body[:meta][:token]).to eq assigns(:token)
         expect(response_body[:data][:email]).to eq user.email
         expect(response_body[:data][:fname]).to eq user.fname
         expect(response_body[:data][:lname]).to eq user.lname
