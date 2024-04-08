@@ -192,4 +192,38 @@ RSpec.describe Api::V1::AuthController, type: :controller do
       end
     end
   end
+
+  describe 'POST #refresh_token' do
+    include_context :authentication_grant
+
+    let(:user_refresh_token) { JsonWebToken.encode_refresh_token user.unique_token }
+
+    context 'when successfully request refresh_token' do
+      it do
+        request.headers['Authorization'] = user_refresh_token
+        post :refresh_token
+
+        expect(response).to have_http_status(:ok)
+        expect(response_body[:meta][:token]).to_not be_empty
+      end
+    end
+
+    context 'when fails to request refresh_token' do
+      it 'returns unauthorized when invalid refresh_token passed' do
+        request.headers['Authorization'] = 'invalid_token'
+        post :refresh_token
+
+        expect(response).to have_http_status(:unauthorized)
+        expect(response_body[:success]).to eq(false)
+      end
+
+      it 'returns unauthorized when user not found' do
+        request.headers['Authorization'] = JsonWebToken.encode_refresh_token "not_user"
+        post :refresh_token
+
+        expect(response).to have_http_status(:unauthorized)
+        expect(response_body[:success]).to eq(false)
+      end
+    end
+  end
 end
