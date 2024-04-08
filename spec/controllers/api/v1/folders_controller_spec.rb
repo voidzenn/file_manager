@@ -3,6 +3,22 @@
 require "rails_helper"
 
 RSpec.describe Api::V1::FoldersController, type: :controller do
+  describe 'POST #index' do
+    include_context :authentication_grant
+
+    context 'when folder successfully retrieved' do
+      let!(:folder) { create :folder }
+
+      it do
+        get :index
+
+        expect(response).to have_http_status(:ok)
+        expect(response_body[:data].first[:id]).to eq(folder.id)
+        expect(response_body[:data].first[:path]).to eq(folder.path.chop)
+      end
+    end
+  end
+
   describe "POST #create" do
     include_context :authentication_grant
 
