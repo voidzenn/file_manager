@@ -2,10 +2,10 @@
 
 class JsonWebToken
   SECRET_KEY = ENV['SECRET_KEY']
-  DEFAULT_EXPIRATION_TIME_MINUTES = 15.minutes.from_now
+  DEFAULT_EXPIRATION_TIME_MINUTES = 15.minutes
 
   class << self
-    def encode id, payload = {}, exp = DEFAULT_EXPIRATION_TIME_MINUTES
+    def encode id, payload = {}, exp = DEFAULT_EXPIRATION_TIME_MINUTES.from_now
       payload[:id] = id
       payload[:token_type] = 'access'
 
