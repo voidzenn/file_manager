@@ -6,7 +6,7 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
   describe 'POST #index' do
     include_context :authentication_grant
 
-    context 'when folder successfully retrieved' do
+    context 'when folder successfully retrieved and has data' do
       let!(:folder) { create :folder }
 
       it do
@@ -15,6 +15,15 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
         expect(response).to have_http_status(:ok)
         expect(response_body[:data].first[:id]).to eq(folder.id)
         expect(response_body[:data].first[:path]).to eq(folder.path.chop)
+      end
+    end
+
+    context 'when folder successfully retrieved and no data' do
+      it do
+        get :index
+
+        expect(response).to have_http_status(:ok)
+        expect(response_body[:data]).to eq([])
       end
     end
   end
