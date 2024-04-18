@@ -4,7 +4,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
   before_action :find_folder, only: :rename
 
   def index
-    @pagy, @folders = pagy(Folder.all.order_by_date)
+    @pagy, @folders = pagy(Folder.where(user_id: current_user_id).order_by_date)
 
     render_jsonapi(
       ActiveModel::Serializer::CollectionSerializer.new(
