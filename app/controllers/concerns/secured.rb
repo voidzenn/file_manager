@@ -22,7 +22,7 @@ module Secured
   end
 
   def jwt_token
-    token = request.headers["Authorization"].split(" ").last
+    token = request.headers["Authorization"]&.split(" ")&.last
     JsonWebToken.decode token
   end
 end

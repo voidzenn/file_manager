@@ -21,7 +21,7 @@ class Api::V1::AuthController < Api::V1::BaseController
   def sign_in
     if @user && @user.authenticate(params[:password])
       @token = JsonWebToken.encode @user.unique_token
-      @refresh_token = JsonWebToken.encode @user.unique_token, {}, 1.month.from_now
+      @refresh_token = JsonWebToken.encode_refresh_token @user.unique_token, {}, 1.month.from_now
 
       sign_in_response
     else
@@ -30,7 +30,8 @@ class Api::V1::AuthController < Api::V1::BaseController
   end
 
   def refresh_token
-    token = request.headers["Authorization"].split(" ").last
+    token = request.headers["Authorization"]&.split(" ")&.last
+
     decoded = JsonWebToken.decode token
 
     raise Api::Error::UnauthorizedError, nil unless decoded.token_type == 'refresh'
