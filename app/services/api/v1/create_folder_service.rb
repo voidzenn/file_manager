@@ -7,6 +7,7 @@ class Api::V1::CreateFolderService
 
   def perform
     create_folder
+    broadcast_folder_created
   end
 
   private
@@ -14,7 +15,11 @@ class Api::V1::CreateFolderService
   attr_reader :params
 
   def create_folder
-    folder = Folder.new(params)
-    folder.save!
+    @folder = Folder.new(params)
+    @folder.save!
+  end
+
+  def broadcast_folder_created
+    FolderChannel.broadcast_folder_created Api::V1::FolderSerializer.new(@folder).serializable_hash
   end
 end

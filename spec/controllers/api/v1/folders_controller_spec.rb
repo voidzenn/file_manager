@@ -7,7 +7,7 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
     include_context :authentication_grant
 
     context 'when folder successfully retrieved and has data' do
-      let!(:folder) { create :folder }
+      let!(:folder) { create(:folder, path: 'test/', user_id: user.id) }
 
       it do
         get :index
