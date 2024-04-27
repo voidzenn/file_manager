@@ -3,7 +3,13 @@
 require "rails_helper"
 
 RSpec.describe Api::V1::FoldersController, type: :controller do
-  describe 'POST #index' do
+  shared_context :allow_get_current_bucket do
+    before do
+      allow_any_instance_of(Api::V1::GetCurrentBucketService).to receive(:perform).and_return(double(object: double(upload_file: true)))
+    end
+  end
+
+  describe 'GET #index' do
     include_context :authentication_grant
 
     context 'when folder successfully retrieved and has data' do
@@ -41,13 +47,11 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
       end
 
       include_context :initialize_aws_s3
-
-      before do
-        allow_any_instance_of(Api::V1::CreateFolderMinioService).to receive(:perform).and_return(true)
-        post :create, params: valid_params
-      end
+      include_context :allow_get_current_bucket
 
       it do
+        post :create, params: valid_params
+
         expect(response).to have_http_status(:created)
         expect(response_body[:success]).to eq true
         expect(response_body[:data][:path]).to eq valid_params[:folder][:path]
@@ -66,13 +70,11 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
       end
 
       include_context :initialize_aws_s3
-
-      before do
-        allow_any_instance_of(Api::V1::CreateFolderMinioService).to receive(:perform).and_return(true)
-        post :create, params: valid_params
-      end
+      include_context :allow_get_current_bucket
 
       it do
+        post :create, params: valid_params
+
         expect(response).to have_http_status(:created)
         expect(response_body[:success]).to eq true
         expect(response_body[:data][:path]).to eq valid_params[:folder][:path]
@@ -81,10 +83,10 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
 
     context "when create folder fails" do
       context "when parameter missing" do
-        subject{ post :create, params: {} }
-
         it do
-          expect(subject).to have_http_status(:bad_request)
+          post :create, params: {}
+
+          expect(response).to have_http_status(:bad_request)
           expect(response_body[:error]).to eq "Parameter missing"
         end
       end
@@ -94,10 +96,10 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
           { path: "" }
         end
 
-        subject{ post :create, params: { folder: params } }
-
         it do
-          expect(subject).to have_http_status(:unprocessable_entity)
+          post :create, params: { folder: params }
+
+          expect(response).to have_http_status(:unprocessable_entity)
           expect(response_body[:success]).to eq false
           expect(response_body[:error][0][:path]).to eq "cannot be blank"
         end
@@ -112,10 +114,10 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
           }
         end
 
-        subject{ post :create, params: invalid_params }
-
         it 'should return an error message' do
-          expect(subject).to have_http_status(:unprocessable_entity)
+          post :create, params: invalid_params
+
+          expect(response).to have_http_status(:unprocessable_entity)
           expect(response_body[:success]).to eq false
           expect(response_body[:error][0][:path]).to eq I18n.t("errors.models.folder.format.message")
         end
@@ -141,7 +143,6 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
 
       before do
         allow_any_instance_of(Api::V1::RenameFolderMinioService).to receive(:perform).with(any_args).and_return(true)
-        allow_any_instance_of(Api::V1::RenameFolderJob).to receive(:perform_now).with(any_args).and_return(true)
         put :rename, params: valid_params
       end
 

@@ -18,14 +18,20 @@ class Api::V1::FoldersController < Api::V1::BaseController
   def create
     return create_root_folder if folder_params[:parent_unique_token].nil?
 
-    find_parent_folder folder_params[:parent_unique_token]
+    find_parent_folder
 
-    Api::V1::CreateFolderJob.perform_now(
-      params: folder_params_without_parent_unique_token,
-      user_id: current_user_id,
-      bucket_token: current_user_bucket_token,
-      parent_folder_object: @parent_folder,
-    )
+    ActiveRecord::Base.transaction do
+      load_full_path
+
+      Api::V1::CreateFolderService.new(
+        folder_params_without_parent_unique_token
+      ).perform
+
+      Api::V1::CreateFolderJob.perform_later(
+        folder_params_without_parent_unique_token,
+        @full_path
+      )
+    end
 
     render_jsonapi success_response, status: :created
   end
@@ -33,16 +39,18 @@ class Api::V1::FoldersController < Api::V1::BaseController
   def rename
     return rename_root_folder if folder_update_params[:parent_unique_token].nil?
 
-    find_parent_folder folder_update_params[:parent_unique_token]
+    find_parent_folder
 
-    Api::V1::RenameFolderJob.perform_now(
-      user_id: current_user_id,
-      bucket_token: current_user_bucket_token,
-      folder_object: @folder,
-      parent_folder_object: @parent_folder,
-      path: @folder.path,
-      new_path: folder_update_params[:new_path]
-    )
+    ActiveRecord::Base.transaction do
+      load_full_path
+
+      @folder.update!(path: folder_update_params[:new_path])
+
+      Api::V1::RenameFolderJob.perform_later(
+        current_user_bucket_token,
+        @full_path
+      )
+    end
 
     render_jsonapi success_update_response
   end
@@ -71,27 +79,50 @@ class Api::V1::FoldersController < Api::V1::BaseController
                               unique_token: folder_update_params[:unique_token])
   end
 
-  def find_parent_folder parent_unique_token
-    @parent_folder = Folder.find_by!(unique_token: parent_unique_token)
+  def find_parent_folder
+    return if params[:folder][:parent_unique_token].nil?
+
+    @parent_folder = Folder.find_by!(
+      unique_token: params[:folder][:parent_unique_token]
+    )
   end
 
   def create_root_folder
-    Api::V1::CreateRootFolderJob.perform_now(
-      folder_params.merge(user_id: current_user_id),
-      current_user_bucket_token,
-      folder_params[:path]
-    )
+    ActiveRecord::Base.transaction do
+      Api::V1::CreateFolderService.new(
+        folder_params.merge!(user_id: current_user_id)
+      ).perform
+
+      Api::V1::CreateRootFolderJob.perform_later(
+        current_user_bucket_token,
+        folder_params[:path]
+      )
+    end
 
     render_jsonapi success_response, status: :created
   end
 
+  def load_full_path
+    @full_path = Api::V1::FolderTraversalService.new(
+      user_id: current_user_id,
+      parent_folder_object: @parent_folder,
+      new_prefix: folder_params_without_parent_unique_token[:path]
+    ).perform
+
+    folder_params_without_parent_unique_token.merge!(full_path: @full_path[:new_full_path])
+  end
+
   def rename_root_folder
-    Api::V1::RenameRootFolderJob.perform_now(
-      bucket_token: current_user_bucket_token,
-      folder_object: @folder,
-      path: @folder.path,
-      new_path: folder_update_params[:new_path]
-    )
+    ActiveRecord::Base.transaction do
+      @folder.update!(path: folder_update_params[:new_path])
+
+      Api::V1::RenameRootFolderJob.perform_later(
+        bucket_token: current_user_bucket_token,
+        folder_object: @folder,
+        path: @folder.path,
+        new_path: folder_update_params[:new_path]
+      )
+    end
 
     render_jsonapi success_update_response
   end

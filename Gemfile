@@ -33,6 +33,7 @@ group :development, :test do
   gem "simplecov"
   gem "rails-controller-testing"
   gem "brakeman"
+  gem "mock_redis"
 end
 
 group :development do
