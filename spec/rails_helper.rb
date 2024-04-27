@@ -66,6 +66,8 @@ RSpec.configure do |config|
   config.include ApiHelper, type: :controller
 end
 
+Sidekiq.logger.level = Logger::WARN
+
 Shoulda::Matchers.configure do |config|
   config.integrate do |with|
     with.test_framework :rspec
