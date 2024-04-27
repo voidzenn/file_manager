@@ -5,15 +5,22 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
 
   def create
     @filename = file_upload_params[:file_upload].original_filename
-    @full_path = @folder.full_path.to_s + @filename.to_s
 
-    Api::V1::UploadFileJob.perform_now(
-      bucket_token: current_user_bucket_token,
-      folder_object: @folder,
-      file: file_upload_params[:file_upload],
-      filename: @filename,
-      full_file_path: @full_path
-    )
+    ActiveRecord::Base.transaction do
+      Api::V1::CreateFileUploadService.new(
+        @folder.id,
+        @filename,
+        folder_full_path
+      ).perform
+
+      # For now we call directly the upload service
+      # In the future there will be condition to check if files is large then use jobs
+      Api::V1::UploadFileMinioService.new(
+        current_user_bucket_token,
+        folder_full_path,
+        file_upload_params[:file_upload]
+      ).perform
+    end
 
     render_jsonapi success_response
   end
@@ -31,7 +38,13 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
   def success_response
     {
       filename: @filename,
-      full_path: @full_path
+      full_path: folder_full_path
     }
+  end
+
+  def folder_full_path
+    folder_path = @folder.full_path.present? ? @folder.full_path : @folder.path
+
+    folder_path + @filename.to_s
   end
 end
