@@ -4,7 +4,9 @@ class Api::V1::FoldersController < Api::V1::BaseController
   before_action :find_folder, only: :rename
 
   def index
-    @pagy, @folders = pagy(Folder.where(user_id: current_user_id).order_by_date)
+    find_current_folder if params[:unique_token].present?
+
+    @pagy, @folders = pagy(Folder.where(index_query).order_by_date)
 
     render_jsonapi(
       ActiveModel::Serializer::CollectionSerializer.new(
@@ -79,12 +81,25 @@ class Api::V1::FoldersController < Api::V1::BaseController
                               unique_token: folder_update_params[:unique_token])
   end
 
+  def find_current_folder
+    @folder = Folder.find_by!(user_id: current_user_id,
+                              unique_token: params[:unique_token])
+  end
+
   def find_parent_folder
     return if params[:folder][:parent_unique_token].nil?
 
     @parent_folder = Folder.find_by!(
       unique_token: params[:folder][:parent_unique_token]
     )
+  end
+
+  def index_query
+    query = {
+      user_id: current_user_id
+    }
+
+    query.merge!({parent_folder_id: @folder.id}) unless @folder.nil?
   end
 
   def create_root_folder
