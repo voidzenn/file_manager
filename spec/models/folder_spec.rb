@@ -140,7 +140,7 @@ RSpec.describe Folder, type: :model do
 
     context 'attribute full_path' do
       it do
-        is_expected.to validate_uniqueness_of(:full_path)
+        is_expected.to validate_uniqueness_of(:full_path).scoped_to(:path)
       end
     end
   end

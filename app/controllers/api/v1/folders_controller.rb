@@ -4,19 +4,21 @@ class Api::V1::FoldersController < Api::V1::BaseController
   before_action :find_folder, only: :rename
 
   def index
-    @pagy, @folders = pagy(Folder.where(user_id: current_user_id).order_by_date)
+    find_current_folder if params[:unique_token].present?
+
+    @pagy, @folders = pagy(Folder.where(index_query).order_by_date)
 
     render_jsonapi(
       ActiveModel::Serializer::CollectionSerializer.new(
         @folders,
         serializer: Api::V1::FolderSerializer
       ),
-      meta: pagy_metadata(@pagy)
+      meta: folder_meta
     )
   end
 
   def create
-    return create_root_folder if folder_params[:parent_unique_token].nil?
+    return create_root_folder if folder_params[:parent_unique_token].blank?
 
     find_parent_folder
 
@@ -24,11 +26,11 @@ class Api::V1::FoldersController < Api::V1::BaseController
       load_full_path
 
       Api::V1::CreateFolderService.new(
-        folder_params_without_parent_unique_token
+        folder_params_without_parent_unique_token.merge(full_path: @full_path[:old_full_path])
       ).perform
 
       Api::V1::CreateFolderJob.perform_later(
-        folder_params_without_parent_unique_token,
+        current_user_bucket_token,
         @full_path
       )
     end
@@ -37,7 +39,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
   end
 
   def rename
-    return rename_root_folder if folder_update_params[:parent_unique_token].nil?
+    return rename_root_folder if folder_update_params[:parent_unique_token].blank?
 
     find_parent_folder
 
@@ -58,25 +60,26 @@ class Api::V1::FoldersController < Api::V1::BaseController
   private
 
   def folder_params
-    permitted_params = params.require(:folder).permit(:path, :parent_unique_token)
-    permitted_params[:parent_unique_token] = nil if [:parent_unique_token].blank?
-    permitted_params
+    params.require(:folder).permit(:path, :parent_unique_token)
   end
 
   def folder_update_params
-    permitted_params = params.require(:folder).permit(:unique_token, :new_path, :parent_unique_token)
-    permitted_params[:parent_unique_token] = nil if [:parent_unique_token].blank?
-    permitted_params
+    params.require(:folder).permit(:unique_token, :new_path, :parent_unique_token)
   end
 
   def folder_params_without_parent_unique_token
-    new_params = folder_params.merge(user_id: current_user_id, parent_folder_id: @parent_folder.id)
-    new_params.except(:parent_unique_token)
+    folder_params.merge(user_id: current_user_id, parent_folder_id: @parent_folder.id)
+                 .except(:parent_unique_token)
   end
 
   def find_folder
     @folder = Folder.find_by!(user_id: current_user_id,
                               unique_token: folder_update_params[:unique_token])
+  end
+
+  def find_current_folder
+    @folder = Folder.find_by!(user_id: current_user_id,
+                              unique_token: params[:unique_token])
   end
 
   def find_parent_folder
@@ -87,10 +90,30 @@ class Api::V1::FoldersController < Api::V1::BaseController
     )
   end
 
+  def index_query
+    query = {
+      user_id: current_user_id,
+      parent_folder_id: @folder&.id || nil
+    }
+  end
+
+  def folder_meta
+    meta = pagy_metadata(@pagy)
+
+    return meta if @folder.nil?
+
+    meta.merge({
+      full_path: @folder.full_path
+    })
+  end
+
   def create_root_folder
+    new_params = folder_params.except(:parent_unique_token)
+                              .merge!(user_id: current_user_id)
+
     ActiveRecord::Base.transaction do
       Api::V1::CreateFolderService.new(
-        folder_params.merge!(user_id: current_user_id)
+        new_params
       ).perform
 
       Api::V1::CreateRootFolderJob.perform_later(

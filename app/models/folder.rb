@@ -9,7 +9,7 @@ class Folder < ApplicationRecord
   scope :order_by_date, -> { order(created_at: :desc) }
 
   validates :path, presence: true
-  validates :full_path, uniqueness: { allow_blank: true }
+  validates :full_path, uniqueness: { allow_blank: true, scope: :path }
   validate :validate_path_format
   validate :validate_path_uniqueness, if: -> { path_changed? }
   validate :validate_path_not_changed
