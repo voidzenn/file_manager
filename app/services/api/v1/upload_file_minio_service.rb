@@ -17,7 +17,7 @@ class Api::V1::UploadFileMinioService
 
   def upload_file
     bucket = Api::V1::GetCurrentBucketService.new(bucket_token).perform
-    object = bucket.object(full_file_path)
+    object = bucket.object(full_file_path || file.original_filename)
 
     object.upload_file(file.path)
   end

@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 class Api::V1::CreateFileUploadService
-  def initialize folder_id, filename, full_path
+  def initialize user_id, folder_id, filename, full_path
+    @user_id = user_id
     @folder_id = folder_id
     @filename = filename
     @full_path = full_path
@@ -13,10 +14,11 @@ class Api::V1::CreateFileUploadService
 
   private
 
-  attr_accessor :folder_id, :filename, :full_path
+  attr_accessor :user_id, :folder_id, :filename, :full_path
 
   def create_file_upload
     FileUpload.create!(
+      user_id: user_id,
       folder_id: folder_id,
       name: filename,
       full_path: full_path
