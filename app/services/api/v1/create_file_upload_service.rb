@@ -10,6 +10,7 @@ class Api::V1::CreateFileUploadService
 
   def perform
     create_file_upload
+    broadcast_file_created
   end
 
   private
@@ -17,11 +18,17 @@ class Api::V1::CreateFileUploadService
   attr_accessor :user_id, :folder_id, :filename, :full_path
 
   def create_file_upload
-    FileUpload.create!(
+    @file_upload = FileUpload.create!(
       user_id: user_id,
       folder_id: folder_id,
       name: filename,
       full_path: full_path
+    )
+  end
+
+  def broadcast_file_created
+    FileChannel.broadcast_file_created(
+      [Api::V1::FileUploadSerializer.new(@file_upload).serializable_hash]
     )
   end
 end

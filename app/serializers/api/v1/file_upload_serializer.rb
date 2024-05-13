@@ -1,5 +1,5 @@
 class Api::V1::FileUploadSerializer < ActiveModel::Serializer
-  attributes :id, :unique_token, :full_path, :filename, :file_extension, :created_at
+  attributes :id, :folder_id, :unique_token, :full_path, :filename, :file_extension, :created_at
 
   attribute :filename do
     object.name&.split('.')&.first

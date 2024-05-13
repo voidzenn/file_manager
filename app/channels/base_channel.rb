@@ -1,10 +1,10 @@
 class BaseChannel < ApplicationCable::Channel
   def self.broadcast channel_name, action, data
-    return unless data.is_a? Hash
+    return unless data.is_a? Array
 
     body_data = {
       action: action,
-      data: [data]
+      data: data
     }
 
     ActionCable.server.broadcast(

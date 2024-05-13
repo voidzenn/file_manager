@@ -2,7 +2,7 @@
 
 class Api::V1::FileUploadsController < Api::V1::BaseController
   def index
-    find_folder if params[:unique_token].present?
+    find_folder if params[:folder_unique_token].present?
 
     @pagy, @file_uploads = pagy(FileUpload.where(index_query))
 
@@ -15,12 +15,13 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
   end
 
   def create
-    return upload_file_to_root if file_upload_params[:unique_token].blank?
+    return upload_file_to_root if file_upload_params[:folder_unique_token].blank?
 
     find_folder
 
     ActiveRecord::Base.transaction do
       Api::V1::CreateFileUploadService.new(
+        current_user_id,
         @folder.id,
         uploaded_filename,
         folder_full_path
@@ -46,7 +47,7 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
 
   def find_folder
     @folder = Folder.find_by!(
-      unique_token: params[:unique_token] || file_upload_params[:folder_unique_token]
+      unique_token: params[:folder_unique_token] || file_upload_params[:folder_unique_token]
     )
   end
 
@@ -56,10 +57,9 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
 
   def index_query
     query = {
-      user_id: current_user_id
+      user_id: current_user_id,
+      folder_id: @folder&.id || nil
     }
-
-    query.merge({ folder_id: @folder.id }) unless @folder.nil?
   end
 
   def upload_file_to_root
