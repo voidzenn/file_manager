@@ -6,14 +6,38 @@ RSpec.describe Api::V1::FileUploadsController, type: :controller do
   include_context :authentication_grant
   include_examples :sample_file
 
+  describe 'GET #index' do
+    context 'when retrieving files successful' do
+      let!(:file_upload) { create(:file_upload, user_id: user.id, folder_id: nil) }
+
+      it 'should return files list' do
+        get :index
+
+        expect(response).to have_http_status(:ok)
+        expect(response_body[:data][0][:id]).to eq(file_upload.id)
+        expect(response_body[:data][0][:folder_id]).to eq(nil)
+        expect(response_body[:data][0][:unique_token]).to eq(file_upload.unique_token)
+        expect(response_body[:data][0][:full_path]).to eq(file_upload.full_path)
+        expect(response_body[:data][0][:filename]).to eq(file_upload.name)
+      end
+    end
+  end
+
   describe 'POST #create' do
-    context 'when request successful' do
+    context 'when uploading successful' do
       let(:parent_path) { 'parent_path/' }
       let!(:parent_folder) { create(:folder, user_id: user.id, path: parent_path, full_path: parent_path) }
       let(:child_path) { 'child_path/' }
       let(:full_path) { parent_folder.full_path + child_path }
       let!(:folder) { create(:folder, user_id: user.id, parent_folder_id: parent_folder.id, path: child_path, full_path: full_path) }
-      let(:valid_params) do
+      let(:valid_params_root) do
+        {
+          data: {
+            file_upload: sample_file
+          }
+        }
+      end
+      let(:valid_params_nested) do
         {
           data: {
             folder_unique_token: folder.unique_token,
@@ -27,8 +51,17 @@ RSpec.describe Api::V1::FileUploadsController, type: :controller do
         allow_any_instance_of(Api::V1::UploadFileMinioService).to receive(:perform).and_return(true)
       end
 
-      it do
-        post :create, params: valid_params
+      it 'should upload file to root folder' do
+        post :create, params: valid_params_root
+
+        expect(response).to have_http_status(:ok)
+        expect(response_body[:success]).to eq(true)
+        expect(response_body[:data][:filename]).to eq(sample_file.original_filename)
+        expect(response_body[:data][:full_path]).to eq(sample_file.original_filename)
+      end
+
+      it 'should upload file to nested folder' do
+        post :create, params: valid_params_nested
 
         expect(response).to have_http_status(:ok)
         expect(response_body[:success]).to eq(true)

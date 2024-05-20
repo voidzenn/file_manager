@@ -2,7 +2,7 @@
 
 class Api::V1::FileUploadsController < Api::V1::BaseController
   def index
-    find_folder if params[:unique_token].present?
+    find_folder if params[:folder_unique_token].present?
 
     @pagy, @file_uploads = pagy(FileUpload.where(index_query))
 
@@ -15,24 +15,27 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
   end
 
   def create
-    return upload_file_to_root if file_upload_params[:unique_token].blank?
+    return upload_file_to_root if file_upload_params[:folder_unique_token].blank?
 
     find_folder
 
-    ActiveRecord::Base.transaction do
-      Api::V1::CreateFileUploadService.new(
-        @folder.id,
-        uploaded_filename,
-        folder_full_path
-      ).perform
+    Timeout.timeout REQUEST_TIMEOUT do
+      ActiveRecord::Base.transaction do
+        Api::V1::CreateFileUploadService.new(
+          current_user,
+          @folder.id,
+          uploaded_filename,
+          folder_full_path
+        ).perform
 
-      # For now we call directly the upload service
-      # In the future there will be condition to check if files is large then use jobs
-      Api::V1::UploadFileMinioService.new(
-        current_user_bucket_token,
-        folder_full_path,
-        file_upload_params[:file_upload]
-      ).perform
+        # For now we call directly the upload service
+        # In the future there will be condition to check if files is large then use jobs
+        Api::V1::UploadFileMinioService.new(
+          current_user_bucket_token,
+          folder_full_path,
+          file_upload_params[:file_upload]
+        ).perform
+      end
     end
 
     render_jsonapi success_response
@@ -46,7 +49,7 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
 
   def find_folder
     @folder = Folder.find_by!(
-      unique_token: params[:unique_token] || file_upload_params[:folder_unique_token]
+      unique_token: params[:folder_unique_token] || file_upload_params[:folder_unique_token]
     )
   end
 
@@ -56,26 +59,27 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
 
   def index_query
     query = {
-      user_id: current_user_id
+      user_id: current_user.id,
+      folder_id: @folder&.id || nil
     }
-
-    query.merge({ folder_id: @folder.id }) unless @folder.nil?
   end
 
   def upload_file_to_root
-    ActiveRecord::Base.transaction do
-      Api::V1::CreateFileUploadService.new(
-        current_user_id,
-        nil,
-        uploaded_filename,
-        nil
-      ).perform
+    Timeout.timeout REQUEST_TIMEOUT do
+      ActiveRecord::Base.transaction do
+        Api::V1::CreateFileUploadService.new(
+          current_user,
+          nil,
+          uploaded_filename,
+          nil
+        ).perform
 
-      Api::V1::UploadFileMinioService.new(
-        current_user_bucket_token,
-        nil,
-        file_upload_params[:file_upload]
-      ).perform
+        Api::V1::UploadFileMinioService.new(
+          current_user_bucket_token,
+          nil,
+          file_upload_params[:file_upload]
+        ).perform
+      end
     end
 
     render_jsonapi success_response

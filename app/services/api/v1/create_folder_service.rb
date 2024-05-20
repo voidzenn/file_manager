@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 class Api::V1::CreateFolderService
-  def initialize params
+  def initialize current_user, params
+    @current_user = current_user
     @params = params
   end
 
@@ -12,7 +13,7 @@ class Api::V1::CreateFolderService
 
   private
 
-  attr_reader :params
+  attr_reader :current_user, :params
 
   def create_folder
     @folder = Folder.new(params)
@@ -20,6 +21,9 @@ class Api::V1::CreateFolderService
   end
 
   def broadcast_folder_created
-    FolderChannel.broadcast_folder_created Api::V1::FolderSerializer.new(@folder).serializable_hash
+    FolderChannel.broadcast_folder_created(
+      current_user,
+      [Api::V1::FolderSerializer.new(@folder).serializable_hash]
+    )
   end
 end

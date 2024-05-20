@@ -26,6 +26,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
       load_full_path
 
       Api::V1::CreateFolderService.new(
+        current_user,
         folder_params_without_parent_unique_token.merge(full_path: @full_path[:old_full_path])
       ).perform
 
@@ -68,17 +69,17 @@ class Api::V1::FoldersController < Api::V1::BaseController
   end
 
   def folder_params_without_parent_unique_token
-    folder_params.merge(user_id: current_user_id, parent_folder_id: @parent_folder.id)
+    folder_params.merge(user_id: current_user.id, parent_folder_id: @parent_folder.id)
                  .except(:parent_unique_token)
   end
 
   def find_folder
-    @folder = Folder.find_by!(user_id: current_user_id,
+    @folder = Folder.find_by!(user_id: current_user.id,
                               unique_token: folder_update_params[:unique_token])
   end
 
   def find_current_folder
-    @folder = Folder.find_by!(user_id: current_user_id,
+    @folder = Folder.find_by!(user_id: current_user.id,
                               unique_token: params[:unique_token])
   end
 
@@ -92,7 +93,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
 
   def index_query
     query = {
-      user_id: current_user_id,
+      user_id: current_user.id,
       parent_folder_id: @folder&.id || nil
     }
   end
@@ -109,10 +110,11 @@ class Api::V1::FoldersController < Api::V1::BaseController
 
   def create_root_folder
     new_params = folder_params.except(:parent_unique_token)
-                              .merge!(user_id: current_user_id)
+                              .merge!(user_id: current_user.id)
 
     ActiveRecord::Base.transaction do
       Api::V1::CreateFolderService.new(
+        current_user,
         new_params
       ).perform
 
@@ -127,7 +129,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
 
   def load_full_path
     @full_path = Api::V1::FolderTraversalService.new(
-      user_id: current_user_id,
+      user_id: current_user.id,
       parent_folder_object: @parent_folder,
       new_prefix: folder_params_without_parent_unique_token[:path]
     ).perform
