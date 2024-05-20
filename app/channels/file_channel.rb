@@ -1,17 +1,15 @@
-class FileChannel < BaseChannel
+class FileChannel < ApplicationCable::Channel
   def subscribed
-    stream_from FILE_CHANNEL
-  end
-
-  def receive data
+    stream_for current_user
   end
 
   def unsubscribed
+    stop_all_streams
   end
 
   class << self
-    def broadcast_file_created data
-      broadcast FILE_CHANNEL, "file_created", data
+    def broadcast_file_created user, payload
+      self.broadcast_to user, action: 'file_created', data: payload
     end
   end
 end

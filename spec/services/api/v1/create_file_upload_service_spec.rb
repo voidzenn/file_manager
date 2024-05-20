@@ -9,7 +9,7 @@ RSpec.describe Api::V1::CreateFileUploadService do
     let!(:file_upload) { create :file_upload }
     let(:full_path) { 'test/' }
     let(:filename) { File.basename(file_path) }
-    let(:service) { described_class.new(file_upload.user_id, file_upload.folder.id, filename, full_path) }
+    let(:service) { described_class.new(file_upload.user, file_upload.folder.id, filename, full_path) }
 
     context do
       it 'should create file_upload record' do
@@ -17,7 +17,7 @@ RSpec.describe Api::V1::CreateFileUploadService do
       end
 
       it 'should handle exception' do
-        service = described_class.new(file_upload.folder.id, '', '', '')
+        service = described_class.new(file_upload.user, file_upload.folder.id, '', '')
         expect{service.perform}.to raise_error(ActiveRecord::RecordInvalid)
       end
     end

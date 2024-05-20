@@ -34,6 +34,7 @@ group :development, :test do
   gem "rails-controller-testing"
   gem "brakeman"
   gem "mock_redis"
+  gem "action-cable-testing"
 end
 
 group :development do
