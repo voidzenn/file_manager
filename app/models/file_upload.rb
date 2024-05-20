@@ -2,7 +2,7 @@ class FileUpload < ApplicationRecord
   belongs_to :user
   belongs_to :folder, optional: true
 
-  validates :name, presence: true, uniqueness: { scope: :folder_id }
+  validates :name, presence: true#, uniqueness: { scope: [:folder_id, :full_path] }
 
   before_create :generate_unique_token
 
