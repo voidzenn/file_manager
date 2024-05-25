@@ -4,31 +4,94 @@ services:
     image: postgres:latest
     container_name: postgres
     ports:
-      - 5432:5432
+      - ${POSTGRES_PORT}:5432
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - file_manager:/var/lib/postgresql/data
+    networks:
+      - network1
   minio:
     image: minio/minio
     container_name: minio
     restart: always
     ports:
-      - 9000:9000
+      - ${MINIO_PORT}:9000
     environment:
-      MINIO_ROOT_USER: 'my_access_key'
-      MINIO_ROOT_PASSWORD: 'my_secret_key'
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY_ID}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_ACCESS_KEY}
     volumes:
       - file_manager:/data
       - file_manager:/root/.minio
     command: server /data
+    networks:
+      - network1
   redis:
     image: redis:7.2
     container_name: redis
     ports:
-      - 6379:6379
+      - ${REDIS_PORT}:6379
     volumes:
       - file_manager:/data
+    networks:
+      - network1
+  app:
+    container_name: rails_server
+    image: rails_server:latest
+    build: .
+    command: rails server -b 0.0.0.0
+    volumes:
+      - .:/app
+    ports:
+      - ${APP_PORT}:3000
+    depends_on:
+      - db
+      - minio
+      - redis
+    environment:
+      RAILS_WEB_CONTAINER: true
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_NAME_TEST: ${DB_NAME_TEST}
+      DB_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}
+
+      MINIO_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY_ID}
+      MINIO_SECRET_ACCESS_KEY: ${MINIO_SECRET_ACCESS_KEY}
+      MINIO_REGION: ${MINIO_REGION}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+
+      EXPIRATION_TIME_MINUTES: ${EXPIRATION_TIME_MINUTES}
+      SECRET_KEY: ${SECRET_KEY}
+    networks:
+      - network1
+  sidekiq:
+    container_name: rails_sidekiq
+    image: rails_sidekiq:latest
+    build: .
+    command: bundle exec sidekiq
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - minio
+      - redis
+      - app
+    environment:
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_NAME_TEST: ${DB_NAME_TEST}
+      DB_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}
+      REDIS_URL: redis://redis:${REDIS_PORT}/1
+
+      EXPIRATION_TIME_MINUTES: ${EXPIRATION_TIME_MINUTES}
+      SECRET_KEY: ${SECRET_KEY}
+    networks:
+      - network1
 volumes:
   file_manager:
+networks:
+  network1:

@@ -13,11 +13,10 @@ gem "jbuilder"
 gem "redis", "~> 4.0"
 gem "tzinfo-data", platforms: %i[ mingw mswin x64_mingw jruby ]
 gem "bootsnap", require: false
-gem "figaro"
 gem "jwt"
 gem "bcrypt"
 gem "sidekiq"
-gem "aws-sdk-s3", require: false
+gem "aws-sdk-s3", "~> 1.134.0" , require: false
 gem "rack-cors"
 gem "active_model_serializers"
 gem "pagy"
@@ -35,6 +34,7 @@ group :development, :test do
   gem "brakeman"
   gem "mock_redis"
   gem "action-cable-testing"
+  gem "dotenv-rails"
 end
 
 group :development do
