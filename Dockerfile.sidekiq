@@ -1,0 +1,21 @@
+# Use the official Ruby image as the base
+FROM ruby:3.0.4-slim
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the Gemfile and Gemfile.lock
+COPY Gemfile /app/Gemfile
+COPY Gemfile.lock /app/Gemfile.lock
+
+# Install the gem dependencies
+RUN bundle install
+
+# Copy the rest of the application
+COPY . /app
+
+# Expose port 3000 to the Docker host
+EXPOSE 3000
+
+# Start the Sidekiq server
+CMD ["bundle", "exec", "sidekiq", "-c", "config/sidekiq.yml"]
