@@ -52,19 +52,7 @@ services:
       - redis
     environment:
       RAILS_WEB_CONTAINER: true
-      DB_USERNAME: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
-      DB_NAME: ${DB_NAME}
-      DB_NAME_TEST: ${DB_NAME_TEST}
-      DB_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}
-
-      MINIO_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY_ID}
-      MINIO_SECRET_ACCESS_KEY: ${MINIO_SECRET_ACCESS_KEY}
-      MINIO_REGION: ${MINIO_REGION}
-      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
-
-      EXPIRATION_TIME_MINUTES: ${EXPIRATION_TIME_MINUTES}
-      SECRET_KEY: ${SECRET_KEY}
+      DB_DOCKER_HOST: db
     networks:
       - network1
   sidekiq:
@@ -80,15 +68,7 @@ services:
       - redis
       - app
     environment:
-      DB_USERNAME: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
-      DB_NAME: ${DB_NAME}
-      DB_NAME_TEST: ${DB_NAME_TEST}
-      DB_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}
-      REDIS_URL: redis://redis:${REDIS_PORT}/1
-
-      EXPIRATION_TIME_MINUTES: ${EXPIRATION_TIME_MINUTES}
-      SECRET_KEY: ${SECRET_KEY}
+      DB_DOCKER_HOST: db
     networks:
       - network1
 volumes:
