@@ -1,5 +1,8 @@
 # Use the official Ruby image as the base
-FROM ruby:3.0.4-slim
+FROM ruby:3.0.4
+
+# Install dependencies
+RUN apt-get update -qq && apt-get install -y nodejs postgresql-client
 
 # Set the working directory
 WORKDIR /app
@@ -13,6 +16,12 @@ RUN bundle install
 
 # Copy the rest of the application
 COPY . /app
+
+# Copy the .env file into the container
+COPY .env /app/.env
+
+# Load environment variables using dotenv
+RUN echo "source /app/.env" >> /root/.bashrc
 
 # Expose port 3000 to the Docker host
 EXPOSE 3000

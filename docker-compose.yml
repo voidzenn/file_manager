@@ -40,7 +40,9 @@ services:
   app:
     container_name: rails_server
     image: rails_server:latest
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     command: rails server -b 0.0.0.0
     volumes:
       - .:/app
@@ -52,13 +54,16 @@ services:
       - redis
     environment:
       RAILS_WEB_CONTAINER: true
-      DB_DOCKER_HOST: db
+      DB_HOST: db
+      REDIS_URL: redis://redis:${REDIS_PORT}/1
     networks:
       - network1
   sidekiq:
     container_name: rails_sidekiq
     image: rails_sidekiq:latest
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.sidekiq
     command: bundle exec sidekiq
     volumes:
       - .:/app
@@ -68,7 +73,8 @@ services:
       - redis
       - app
     environment:
-      DB_DOCKER_HOST: db
+      DB_HOST: db
+      REDIS_URL: redis://redis:${REDIS_PORT}/1
     networks:
       - network1
 volumes:
