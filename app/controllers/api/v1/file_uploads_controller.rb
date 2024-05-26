@@ -14,6 +14,12 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
     )
   end
 
+  def view_file
+    file = Api::V1::GetFileUrlMinioService.new(current_user_bucket_token, 'frog2.png').perform
+
+    render plain: file
+  end
+
   def create
     return upload_file_to_root if file_upload_params[:folder_unique_token].blank?
 
