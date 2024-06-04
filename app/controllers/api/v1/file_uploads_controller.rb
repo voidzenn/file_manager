@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Api::V1::FileUploadsController < Api::V1::BaseController
+  before_action :find_file, only: %i[view_file]
+
   def index
     find_folder if params[:folder_unique_token].present?
 
@@ -15,9 +17,14 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
   end
 
   def view_file
-    file = Api::V1::GetFileUrlMinioService.new(current_user_bucket_token, 'frog2.png').perform
+    full_path = @file.full_path.nil? ? @file.name : @file.full_path
 
-    render plain: file
+    @file_url = Api::V1::GetFileUrlMinioService.new(
+      current_user_bucket_token,
+      full_path
+    ).perform
+
+    render_jsonapi view_file_details
   end
 
   def create
@@ -49,8 +56,16 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
 
   private
 
+  def view_file_params
+    params.permit(:unique_token)
+  end
+
   def file_upload_params
     params.require(:data).permit(:folder_unique_token, :file_upload)
+  end
+
+  def find_file
+    @file = FileUpload.find_by!(unique_token: view_file_params[:unique_token])
   end
 
   def find_folder
@@ -64,9 +79,17 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
   end
 
   def index_query
-    query = {
-      user_id: current_user.id,
+    {
+      user_id:   current_user.id,
       folder_id: @folder&.id || nil
+    }
+  end
+
+  def view_file_details
+    {
+      file_url: @file_url,
+      file_name: @file.name,
+      file_extension: @file.name&.split('.')&.last
     }
   end
 
