@@ -29,6 +29,7 @@ module Api
           with: :rescue_bucket_invalid
         )
         rescue_from Aws::S3::Errors::NoSuchBucket, with: :rescue_no_such_bucket
+        rescue_from Aws::S3::Errors::NoSuchKey, with: :rescue_no_such_key
         rescue_from NameError, with: :rescue_name_error
         rescue_from(
           Api::Error::UnprocessableEntity,
@@ -90,8 +91,19 @@ module Api
 
       def rescue_no_such_bucket
         message = {
-          error: 'No such bucket exist',
-          details: 'Run rake task'
+          error: 'No such bucket exist'
+        }
+
+        render_error_response(
+          message[:error],
+          :internal_server_error,
+          message[:details]
+        )
+      end
+
+      def rescue_no_such_key
+        message = {
+          error: 'No such key exist'
         }
 
         render_error_response(
