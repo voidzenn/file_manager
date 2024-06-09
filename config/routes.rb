@@ -11,19 +11,25 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      post "/auth/sign_up", to: "auth#sign_up"
-      post "/auth/sign_in", to: "auth#sign_in"
-      post "/auth/refresh_token", to: "auth#refresh_token"
+      namespace :auth do
+        post :sign_up
+        post :sign_in
+        post :refresh_token
+      end
 
       resources :folders, only: [:index, :create] do
         collection do
-          put :rename, to: "folders#rename"
+          put :rename
         end
       end
 
-      resources :file_uploads, only: [:index, :create]
+      resources :file_uploads, only: [:index, :create] do
+        collection do
+          get :view_file
+        end
+      end
 
-      match "*path", to: "route_error#not_found", via: :all
+      match "*path", to: 'route_error#not_found', via: :all
     end
   end
 end
