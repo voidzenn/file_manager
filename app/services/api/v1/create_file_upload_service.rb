@@ -27,8 +27,9 @@ class Api::V1::CreateFileUploadService
   end
 
   def broadcast_file_created
-    FileChannel.broadcast_file_created(
+    FileChannel.broadcast(
       current_user,
+      FILE_CREATED,
       [Api::V1::FileUploadSerializer.new(@file_upload).serializable_hash]
     )
   end

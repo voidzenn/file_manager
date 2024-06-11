@@ -36,7 +36,7 @@ RSpec.describe FolderChannel, type: :channel do
 
     it 'broadcasts folder created to user' do
       expect {
-        described_class.broadcast_folder_created(user, data)
+        described_class.broadcast(user, FOLDER_CREATED, data)
       }.to have_broadcasted_to(user).with(action: 'folder_created', data: data)
     end
   end

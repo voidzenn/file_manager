@@ -3,5 +3,10 @@ REQUEST_TIMEOUT = 30 # seconds
 
 MINIO_GET_FILE_EXPIRATION =  3000 # 5 minutes
 
-FOLDER_CHANNEL = 'folder_channel'
-FILE_CHANNEL = 'file_channel'
+FOLDER_CHANNEL = "folder_channel"
+FOLDER_CREATED = "folder_created"
+FOLDER_RENAMED = "folder_renamed"
+
+FILE_CHANNEL = "file_channel"
+FILE_CREATED = "file_created"
+FILE_RENAMED = "file_renamed"
