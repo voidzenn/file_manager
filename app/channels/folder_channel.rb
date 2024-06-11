@@ -8,8 +8,8 @@ class FolderChannel < ApplicationCable::Channel
   end
 
   class << self
-    def broadcast_folder_created user, payload
-      self.broadcast_to user, action: 'folder_created', data: payload
+    def broadcast user, action, payload
+      self.broadcast_to user, action: action, data: payload
     end
   end
 end
