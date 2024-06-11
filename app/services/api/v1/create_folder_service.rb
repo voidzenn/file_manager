@@ -21,8 +21,9 @@ class Api::V1::CreateFolderService
   end
 
   def broadcast_folder_created
-    FolderChannel.broadcast_folder_created(
+    FolderChannel.broadcast(
       current_user,
+      FOLDER_CREATED,
       [Api::V1::FolderSerializer.new(@folder).serializable_hash]
     )
   end

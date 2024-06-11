@@ -92,7 +92,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
   end
 
   def index_query
-    query = {
+    {
       user_id: current_user.id,
       parent_folder_id: @folder&.id || nil
     }
@@ -146,6 +146,12 @@ class Api::V1::FoldersController < Api::V1::BaseController
         folder_object: @folder,
         path: @folder.path,
         new_path: folder_update_params[:new_path]
+      )
+
+      FolderChannel.broadcast(
+        current_user,
+        FOLDER_RENAMED,
+        [Api::V1::FolderSerializer.new(@folder).serializable_hash]
       )
     end
 
