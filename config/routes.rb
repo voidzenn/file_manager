@@ -28,8 +28,8 @@ Rails.application.routes.draw do
           get :view_file
         end
       end
-
-      match "*path", to: 'route_error#not_found', via: :all
     end
+
+    match "*path", to: 'route_error#not_found', via: :all
   end
 end
