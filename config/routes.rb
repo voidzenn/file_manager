@@ -26,6 +26,7 @@ Rails.application.routes.draw do
       resources :file_uploads, only: [:index, :create] do
         collection do
           get :view_file
+          put :rename
         end
       end
     end

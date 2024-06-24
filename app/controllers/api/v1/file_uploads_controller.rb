@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Api::V1::FileUploadsController < Api::V1::BaseController
-  before_action :find_file, only: %i[view_file]
+  before_action :find_file, only: %i[view_file rename]
 
   def index
     find_folder if params[:folder_unique_token].present?
@@ -54,6 +54,10 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
     render_jsonapi success_response
   end
 
+  def rename
+    return rename_root_file if params[:file_upload][:folder_unique_token].blank?
+  end
+
   private
 
   def view_file_params
@@ -61,17 +65,19 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
   end
 
   def file_upload_params
-    params.require(:data).permit(:folder_unique_token, :file_upload)
+    params.require(:file_upload).permit(:folder_unique_token, :file_upload)
+  end
+
+  def file_rename_params
+    params.require(:file_upload).permit(:folder_unique_token, :unique_token, :new_name)
   end
 
   def find_file
-    @file = FileUpload.find_by!(unique_token: view_file_params[:unique_token])
+    @file = FileUpload.find_by!(unique_token: params[:file_upload][:unique_token])
   end
 
   def find_folder
-    @folder = Folder.find_by!(
-      unique_token: params[:folder_unique_token] || file_upload_params[:folder_unique_token]
-    )
+    @folder = Folder.find_by!(unique_token: params[:file_upload][:folder_unique_token])
   end
 
   def uploaded_filename
@@ -112,6 +118,28 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
     end
 
     render_jsonapi success_response
+  end
+
+  def rename_root_file
+    old_file_name = @file.name
+
+    if old_file_name == file_rename_params[:new_name]
+      raise Api::Error::RenameFileError.new :same_as_previous_name
+    end
+
+    ActiveRecord::Base.transaction do
+      @file.update!(name: file_rename_params[:new_name])
+
+      Api::V1::RenameRootFileJob.perform_later(
+        current_user_bucket_token,
+        old_file_name,
+        file_rename_params[:new_name]
+      )
+
+      # Broadcast renamed file
+    end
+
+    render_jsonapi Api::V1::FileUploadSerializer.new(@file).serializable_hash
   end
 
   def success_response
