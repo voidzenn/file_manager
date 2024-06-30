@@ -8,6 +8,8 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
 
     @pagy, @file_uploads = pagy(FileUpload.where(index_query))
 
+    return render_jsonapi [] if @file_uploads.empty?
+
     render_jsonapi(
       ActiveModel::Serializer::CollectionSerializer.new(
         @file_uploads,
@@ -56,6 +58,24 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
 
   def rename
     return rename_root_file if params[:file_upload][:folder_unique_token].blank?
+
+    find_folder
+
+    ActiveRecord::Base.transaction do
+      @old_file_name = @file.name
+
+      @file.update(
+        name: file_rename_params[:new_name],
+        full_path: file_upload_paths[:new_full_path]
+      )
+
+      Api::V1::RenameFileJob.perform_later(
+        current_user_bucket_token,
+        file_upload_paths
+      )
+    end
+
+    render_jsonapi Api::V1::FileUploadSerializer.new(@file).serializable_hash
   end
 
   private
@@ -142,6 +162,15 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
     render_jsonapi Api::V1::FileUploadSerializer.new(@file).serializable_hash
   end
 
+  def file_upload_paths
+    folder_path = is_folder_root? ? @folder.path : @folder.full_path
+
+    {
+      old_full_path: folder_path + @old_file_name,
+      new_full_path: folder_path + @file.name
+    }
+  end
+
   def success_response
     full_path = @folder.nil? ? uploaded_filename : folder_full_path
 
@@ -155,5 +184,9 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
     folder_path = @folder.full_path.present? ? @folder.full_path : @folder.path
 
     folder_path + uploaded_filename.to_s
+  end
+
+  def is_folder_root?
+    @folder.parent_folder_id.nil?
   end
 end
