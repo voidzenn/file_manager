@@ -97,7 +97,9 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
   end
 
   def find_folder
-    @folder = Folder.find_by!(unique_token: params[:file_upload][:folder_unique_token])
+    @folder = Folder.find_by!(
+      unique_token: params[:folder_unique_token] || params[:file_upload][:folder_unique_token]
+    )
   end
 
   def uploaded_filename
