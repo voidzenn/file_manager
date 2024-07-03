@@ -63,9 +63,14 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
 
     ActiveRecord::Base.transaction do
       @old_file_name = @file.name
+      name_with_extension = file_rename_params[:new_name] + @old_file_name.split(".").last
+
+      if @old_file_name == name_with_extension
+        raise Api::Error::RenameFileError.new :same_as_previous_name
+      end
 
       @file.update(
-        name: file_rename_params[:new_name],
+        name: name_with_extension,
         full_path: file_upload_paths[:new_full_path]
       )
 
@@ -144,18 +149,19 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
 
   def rename_root_file
     old_file_name = @file.name
+    name_with_extension = file_rename_params[:new_name] + "." + old_file_name.split(".").last
 
-    if old_file_name == file_rename_params[:new_name]
+    if old_file_name == name_with_extension
       raise Api::Error::RenameFileError.new :same_as_previous_name
     end
 
     ActiveRecord::Base.transaction do
-      @file.update!(name: file_rename_params[:new_name])
+      @file.update!(name: name_with_extension)
 
       Api::V1::RenameRootFileJob.perform_later(
         current_user_bucket_token,
         old_file_name,
-        file_rename_params[:new_name]
+        name_with_extension
       )
 
       # Broadcast renamed file
