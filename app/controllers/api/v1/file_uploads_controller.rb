@@ -57,26 +57,28 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
   end
 
   def rename
-    return rename_root_file if params[:file_upload][:folder_unique_token].blank?
+    return rename_root_file if @file.folder_id.nil?
 
-    find_folder
+    @folder = @file.folder
 
     ActiveRecord::Base.transaction do
       @old_file_name = @file.name
-      name_with_extension = file_rename_params[:new_name] + @old_file_name.split(".").last
+      name_with_extension = file_rename_params[:new_name] + "." + @old_file_name.split(".").last
 
       if @old_file_name == name_with_extension
         raise Api::Error::RenameFileError.new :same_as_previous_name
       end
 
+      @full_path = @folder.full_path.present? ? @folder.full_path : @folder.path
       @file.update(
         name: name_with_extension,
-        full_path: file_upload_paths[:new_full_path]
+        full_path: @full_path + name_with_extension
       )
 
       Api::V1::RenameFileJob.perform_later(
         current_user_bucket_token,
-        file_upload_paths
+        @full_path + @old_file_name,
+        @full_path + name_with_extension
       )
     end
 
