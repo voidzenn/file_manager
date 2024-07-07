@@ -1,6 +1,6 @@
-# frozen_string_litera: true
+# frozen_string_literal: true
 
-class Api::V1::RouteErrorController < ApplicationController
+class Api::RouteErrorController < ApplicationController
   skip_before_action :verify_authenticity_token
 
   def not_found
