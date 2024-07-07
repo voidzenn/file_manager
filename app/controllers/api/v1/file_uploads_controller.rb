@@ -80,6 +80,8 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
         @full_path + @old_file_name,
         @full_path + name_with_extension
       )
+
+      broadcast_rename
     end
 
     render_jsonapi Api::V1::FileUploadSerializer.new(@file).serializable_hash
@@ -166,7 +168,7 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
         name_with_extension
       )
 
-      # Broadcast renamed file
+      broadcast_rename
     end
 
     render_jsonapi Api::V1::FileUploadSerializer.new(@file).serializable_hash
@@ -198,5 +200,13 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
 
   def is_folder_root?
     @folder.parent_folder_id.nil?
+  end
+
+  def broadcast_rename
+    FileChannel.broadcast(
+      current_user,
+      FILE_RENAMED,
+      [Api::V1::FileUploadSerializer.new(@file).serializable_hash]
+    )
   end
 end

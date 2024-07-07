@@ -139,12 +139,13 @@ class Api::V1::FoldersController < Api::V1::BaseController
 
   def rename_root_folder
     ActiveRecord::Base.transaction do
+      old_path_name = @folder.path
+
       @folder.update!(path: folder_update_params[:new_path])
 
       Api::V1::RenameRootFolderJob.perform_later(
         bucket_token: current_user_bucket_token,
-        folder_object: @folder,
-        path: @folder.path,
+        path: old_path_name,
         new_path: folder_update_params[:new_path]
       )
 
