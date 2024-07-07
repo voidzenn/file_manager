@@ -26,10 +26,11 @@ Rails.application.routes.draw do
       resources :file_uploads, only: [:index, :create] do
         collection do
           get :view_file
+          put :rename
         end
       end
-
-      match "*path", to: 'route_error#not_found', via: :all
     end
+
+    match "*path", to: 'route_error#not_found', via: :all
   end
 end
