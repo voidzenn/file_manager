@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Api::V1::FoldersController < Api::V1::BaseController
-  before_action :find_folder, only: :rename
+  before_action :find_folder, only: [:rename, :remove_folder]
 
   def index
     find_current_folder if params[:unique_token].present?
@@ -58,6 +58,17 @@ class Api::V1::FoldersController < Api::V1::BaseController
     render_jsonapi success_update_response
   end
 
+  def remove_folder
+    ActiveRecord::Base.transaction do
+      @folder.destroy!
+    end
+
+    render_jsonapi(
+      Api::V1::FolderSerializer.new(@folder).serializable_hash,
+      meta: { message: "Successfully deleted folder" }
+    )
+  end
+
   private
 
   def folder_params
@@ -75,7 +86,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
 
   def find_folder
     @folder = Folder.find_by!(user_id: current_user.id,
-                              unique_token: folder_update_params[:unique_token])
+                              unique_token: params[:unique_token] || params[:folder][:unique_token])
   end
 
   def find_current_folder

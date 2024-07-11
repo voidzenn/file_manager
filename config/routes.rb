@@ -20,6 +20,7 @@ Rails.application.routes.draw do
       resources :folders, only: [:index, :create] do
         collection do
           put :rename
+          delete :remove_folder
         end
       end
 
