@@ -97,6 +97,12 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
         current_user_bucket_token,
         file_path
       )
+
+      FileChannel.broadcast(
+        current_user,
+        FILE_REMOVED,
+        [Api::V1::FileUploadSerializer.new(@file).serializable_hash]
+      )
     end
 
     render_jsonapi Api::V1::FileUploadSerializer.new(@file).serializable_hash
@@ -117,7 +123,7 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
   end
 
   def find_file
-    @file = FileUpload.find_by!(unique_token: params[:file_upload][:unique_token])
+    @file = FileUpload.find_by!(unique_token: params[:unique_token] || params[:file_upload][:unique_token])
   end
 
   def find_folder
