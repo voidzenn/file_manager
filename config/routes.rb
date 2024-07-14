@@ -28,6 +28,7 @@ Rails.application.routes.draw do
         collection do
           get :view_file
           put :rename
+          delete :remove_file
         end
       end
     end

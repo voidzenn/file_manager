@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Api::V1::FileUploadsController < Api::V1::BaseController
-  before_action :find_file, only: %i[view_file rename]
+  before_action :find_file, only: %i[view_file rename remove_file]
 
   def index
     find_folder if params[:folder_unique_token].present?
@@ -82,6 +82,21 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
       )
 
       broadcast_rename
+    end
+
+    render_jsonapi Api::V1::FileUploadSerializer.new(@file).serializable_hash
+  end
+
+  def remove_file
+    ActiveRecord::Base.transaction do
+      @file.destroy!
+
+      file_path = @file.full_path.nil? ? @file.name : @file.full_path
+
+      Api::V1::RemoveFileMinioJob.perform_later(
+        current_user_bucket_token,
+        file_path
+      )
     end
 
     render_jsonapi Api::V1::FileUploadSerializer.new(@file).serializable_hash
