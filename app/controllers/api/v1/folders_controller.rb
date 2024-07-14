@@ -27,7 +27,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
 
       Api::V1::CreateFolderService.new(
         current_user,
-        folder_params_without_parent_unique_token.merge(full_path: @full_path[:old_full_path])
+        folder_params_without_parent_unique_token.merge(full_path: @full_path[:new_full_path])
       ).perform
 
       Api::V1::CreateFolderJob.perform_later(
@@ -61,6 +61,19 @@ class Api::V1::FoldersController < Api::V1::BaseController
   def remove_folder
     ActiveRecord::Base.transaction do
       @folder.destroy!
+
+      folder_path = @folder.full_path.nil? ? @folder.path : @folder.full_path
+
+      Api::V1::RemoveFolderMinioJob.perform_later(
+        current_user_bucket_token,
+        folder_path
+      )
+
+      FolderChannel.broadcast(
+        current_user,
+        FOLDER_REMOVED,
+        [Api::V1::FolderSerializer.new(@folder).serializable_hash]
+      )
     end
 
     render_jsonapi(
