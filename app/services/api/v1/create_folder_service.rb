@@ -1,30 +1,44 @@
 # frozen_string_literal: true
 
 class Api::V1::CreateFolderService
-  def initialize current_user, params
-    @current_user = current_user
-    @params = params
+  def initialize args
+    @parent_unique_token = args[:parent_unique_token]
+    @current_user = args[:current_user]
+    @path = args[:path]
   end
 
   def perform
     create_folder
-    broadcast_folder_created
   end
 
   private
 
-  attr_reader :current_user, :params
+  attr_reader :parent_unique_token, :current_user, :path
 
   def create_folder
-    @folder = Folder.new(params)
+    full_path = parent_unique_token.nil? ? path : nested_full_path[:new_full_path]
+    @folder = Folder.new(
+      user: current_user,
+      path: path,
+      full_path: full_path
+    )
     @folder.save!
+
+    @folder
   end
 
-  def broadcast_folder_created
-    FolderChannel.broadcast(
-      current_user,
-      FOLDER_CREATED,
-      [Api::V1::FolderSerializer.new(@folder).serializable_hash]
+  def nested_full_path
+    @nested_full_path ||= Api::V1::FolderTraversalService.new(
+        user_id: current_user.id,
+        parent_folder_object: parent_folder,
+        new_prefix: path
+    ).perform
+  end
+
+  def parent_folder
+    @parent_folder ||= Folder.find_by!(
+      user: current_user,
+      unique_token: parent_unique_token
     )
   end
 end

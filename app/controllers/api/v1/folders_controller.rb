@@ -30,6 +30,8 @@ class Api::V1::FoldersController < Api::V1::BaseController
         folder_params_without_parent_unique_token.merge(full_path: @full_path[:new_full_path])
       ).perform
 
+      broadcast_folder_created
+
       Api::V1::CreateFolderJob.perform_later(
         current_user_bucket_token,
         @full_path
@@ -159,6 +161,14 @@ class Api::V1::FoldersController < Api::V1::BaseController
     ).perform
 
     folder_params_without_parent_unique_token.merge!(full_path: @full_path[:new_full_path])
+  end
+
+  def broadcast_folder_created
+    FolderChannel.broadcast(
+      current_user,
+      FOLDER_CREATED,
+      [Api::V1::FolderSerializer.new(@folder).serializable_hash]
+    )
   end
 
   def rename_root_folder
