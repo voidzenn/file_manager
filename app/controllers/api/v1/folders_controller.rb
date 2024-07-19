@@ -62,11 +62,9 @@ class Api::V1::FoldersController < Api::V1::BaseController
     ActiveRecord::Base.transaction do
       @folder.destroy!
 
-      folder_path = @folder.full_path.nil? ? @folder.path : @folder.full_path
-
       Api::V1::RemoveFolderMinioJob.perform_later(
         current_user_bucket_token,
-        folder_path
+        @folder.full_path
       )
 
       FolderChannel.broadcast(
@@ -92,11 +90,6 @@ class Api::V1::FoldersController < Api::V1::BaseController
     params.require(:folder).permit(:unique_token, :new_path, :parent_unique_token)
   end
 
-  def folder_params_without_parent_unique_token
-    folder_params.merge(user_id: current_user.id, parent_folder_id: @parent_folder.id)
-                 .except(:parent_unique_token)
-  end
-
   def find_folder
     @folder = Folder.find_by!(user_id: current_user.id,
                               unique_token: params[:unique_token] || params[:folder][:unique_token])
@@ -105,14 +98,6 @@ class Api::V1::FoldersController < Api::V1::BaseController
   def find_current_folder
     @folder = Folder.find_by!(user_id: current_user.id,
                               unique_token: params[:unique_token])
-  end
-
-  def find_parent_folder
-    return if params[:folder][:parent_unique_token].nil?
-
-    @parent_folder = Folder.find_by!(
-      unique_token: params[:folder][:parent_unique_token]
-    )
   end
 
   def index_query
