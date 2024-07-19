@@ -18,27 +18,25 @@ class Api::V1::FoldersController < Api::V1::BaseController
   end
 
   def create
-    return create_root_folder if folder_params[:parent_unique_token].blank?
-
-    find_parent_folder
-
     ActiveRecord::Base.transaction do
-      load_full_path
-
-      Api::V1::CreateFolderService.new(
-        current_user,
-        folder_params_without_parent_unique_token.merge(full_path: @full_path[:new_full_path])
+      @folder = Api::V1::CreateFolderService.new(
+        current_user: current_user,
+        parent_unique_token: folder_params[:parent_unique_token],
+        path: folder_params[:path],
       ).perform
 
       broadcast_folder_created
 
       Api::V1::CreateFolderJob.perform_later(
         current_user_bucket_token,
-        @full_path
+        @folder.full_path
       )
     end
 
-    render_jsonapi success_response, status: :created
+    render_jsonapi(
+      Api::V1::FolderSerializer.new(@folder).serializable_hash,
+      status: :created
+    )
   end
 
   def rename
@@ -134,25 +132,6 @@ class Api::V1::FoldersController < Api::V1::BaseController
     })
   end
 
-  def create_root_folder
-    new_params = folder_params.except(:parent_unique_token)
-                              .merge!(user_id: current_user.id)
-
-    ActiveRecord::Base.transaction do
-      Api::V1::CreateFolderService.new(
-        current_user,
-        new_params
-      ).perform
-
-      Api::V1::CreateRootFolderJob.perform_later(
-        current_user_bucket_token,
-        folder_params[:path]
-      )
-    end
-
-    render_jsonapi success_response, status: :created
-  end
-
   def load_full_path
     @full_path = Api::V1::FolderTraversalService.new(
       user_id: current_user.id,
@@ -191,12 +170,6 @@ class Api::V1::FoldersController < Api::V1::BaseController
     end
 
     render_jsonapi success_update_response
-  end
-
-  def success_response
-    {
-      path: folder_params[:path] || folder_params_without_parent_unique_token[:path]
-    }
   end
 
   def success_update_response
