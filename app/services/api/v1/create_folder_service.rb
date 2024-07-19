@@ -29,7 +29,7 @@ class Api::V1::CreateFolderService
   end
 
   def nested_full_path
-    @nested_full_path = Api::V1::FolderTraversalService.new(
+    Api::V1::FolderTraversalService.new(
       user_id: current_user.id,
       parent_folder_object: parent_folder,
       new_prefix: path
@@ -37,7 +37,7 @@ class Api::V1::CreateFolderService
   end
 
   def parent_folder
-    @parent_folder = Folder.find_by!(
+    Folder.find_by!(
       user: current_user,
       unique_token: parent_unique_token
     )

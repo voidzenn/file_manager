@@ -25,7 +25,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
         path: folder_params[:path],
       ).perform
 
-      broadcast_folder_created
+      broadcast_folder FOLDER_CREATED
 
       Api::V1::CreateFolderJob.perform_later(
         current_user_bucket_token,
@@ -40,22 +40,27 @@ class Api::V1::FoldersController < Api::V1::BaseController
   end
 
   def rename
-    return rename_root_folder if folder_update_params[:parent_unique_token].blank?
-
-    find_parent_folder
-
     ActiveRecord::Base.transaction do
-      load_full_path
-
-      @folder.update!(path: folder_update_params[:new_path])
+      @folder = Api::V1::RenameFolderService.new(
+        current_user: current_user,
+        unique_token: folder_update_params[:unique_token],
+        new_path: folder_update_params[:path]
+      ).perform
 
       Api::V1::RenameFolderJob.perform_later(
         current_user_bucket_token,
-        @full_path
+        @folder
       )
+
+      broadcast_folder FOLDER_RENAMED
     end
 
-    render_jsonapi success_update_response
+    render_jsonapi(
+      Api::V1::FolderSerializer.new(@folder).serializable_hash,
+      meta: {
+        message: "Successfully renamed folder"
+      }
+    )
   end
 
   def remove_folder
@@ -69,11 +74,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
         folder_path
       )
 
-      FolderChannel.broadcast(
-        current_user,
-        FOLDER_REMOVED,
-        [Api::V1::FolderSerializer.new(@folder).serializable_hash]
-      )
+      broadcast_folder FOLDER_REMOVED
     end
 
     render_jsonapi(
@@ -89,7 +90,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
   end
 
   def folder_update_params
-    params.require(:folder).permit(:unique_token, :new_path, :parent_unique_token)
+    params.require(:folder).permit(:unique_token, :path, :parent_unique_token)
   end
 
   def folder_params_without_parent_unique_token
@@ -132,49 +133,11 @@ class Api::V1::FoldersController < Api::V1::BaseController
     })
   end
 
-  def load_full_path
-    @full_path = Api::V1::FolderTraversalService.new(
-      user_id: current_user.id,
-      parent_folder_object: @parent_folder,
-      new_prefix: folder_params_without_parent_unique_token[:path]
-    ).perform
-
-    folder_params_without_parent_unique_token.merge!(full_path: @full_path[:new_full_path])
-  end
-
-  def broadcast_folder_created
+  def broadcast_folder type
     FolderChannel.broadcast(
       current_user,
-      FOLDER_CREATED,
+      type,
       [Api::V1::FolderSerializer.new(@folder).serializable_hash]
     )
-  end
-
-  def rename_root_folder
-    ActiveRecord::Base.transaction do
-      old_path_name = @folder.path
-
-      @folder.update!(path: folder_update_params[:new_path])
-
-      Api::V1::RenameRootFolderJob.perform_later(
-        bucket_token: current_user_bucket_token,
-        path: old_path_name,
-        new_path: folder_update_params[:new_path]
-      )
-
-      FolderChannel.broadcast(
-        current_user,
-        FOLDER_RENAMED,
-        [Api::V1::FolderSerializer.new(@folder).serializable_hash]
-      )
-    end
-
-    render_jsonapi success_update_response
-  end
-
-  def success_update_response
-    {
-      new_path: @folder.path
-    }
   end
 end
