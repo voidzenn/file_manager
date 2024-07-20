@@ -20,7 +20,7 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
   def view_file
     @file_url = Api::V1::GetFileUrlMinioService.new(
       current_user_bucket_token,
-      @file.full_path
+      @file_upload.full_path
     ).perform
 
     render_jsonapi view_file_details
