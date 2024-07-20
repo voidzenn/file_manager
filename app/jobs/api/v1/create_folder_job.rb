@@ -6,7 +6,7 @@ class Api::V1::CreateFolderJob < ApplicationJob
   def perform bucket_token, full_path
     Api::V1::CreateFolderMinioService.new(
       bucket_token,
-      full_path[:new_full_path]
+      full_path
     ).perform
   end
 end
