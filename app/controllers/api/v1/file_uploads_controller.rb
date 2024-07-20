@@ -2,7 +2,7 @@
 
 class Api::V1::FileUploadsController < Api::V1::BaseController
   before_action :find_file, only: %i[view_file rename remove_file]
-  before_action :find_folder, only: %i[index]
+  before_action :find_folder, only: %i[index create]
 
   def index
     @pagy, @file_uploads = pagy(FileUpload.where(index_query))
@@ -29,18 +29,16 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
   end
 
   def create
-    return upload_file_to_root if file_upload_params[:folder_unique_token].blank?
-
-    find_folder
-
     Timeout.timeout REQUEST_TIMEOUT do
       ActiveRecord::Base.transaction do
-        Api::V1::CreateFileUploadService.new(
+        @file_upload = Api::V1::CreateFileUploadService.new(
           current_user,
-          @folder.id,
+          @folder&.id,
           uploaded_filename,
           folder_full_path
         ).perform
+
+        broadcast_file FILE_CREATED
 
         # For now we call directly the upload service
         # In the future there will be condition to check if files is large then use jobs
@@ -52,7 +50,10 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
       end
     end
 
-    render_jsonapi success_response
+    render_jsonapi(
+      [Api::V1::FileUploadSerializer.new(@file_upload).serializable_hash],
+      status: :created
+    )
   end
 
   def rename
@@ -156,27 +157,6 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
     }
   end
 
-  def upload_file_to_root
-    Timeout.timeout REQUEST_TIMEOUT do
-      ActiveRecord::Base.transaction do
-        Api::V1::CreateFileUploadService.new(
-          current_user,
-          nil,
-          uploaded_filename,
-          nil
-        ).perform
-
-        Api::V1::UploadFileMinioService.new(
-          current_user_bucket_token,
-          nil,
-          file_upload_params[:file_upload]
-        ).perform
-      end
-    end
-
-    render_jsonapi success_response
-  end
-
   def rename_root_file
     old_file_name = @file.name
     name_with_extension = file_rename_params[:new_name] + "." + old_file_name.split(".").last
@@ -209,30 +189,21 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
     }
   end
 
-  def success_response
-    full_path = @folder.nil? ? uploaded_filename : folder_full_path
-
-    {
-      filename: uploaded_filename,
-      full_path: full_path
-    }
-  end
-
   def folder_full_path
-    folder_path = @folder.full_path.present? ? @folder.full_path : @folder.path
+    return nil if @folder.nil?
 
-    folder_path + uploaded_filename.to_s
+    @folder.full_path + uploaded_filename.to_s
   end
 
   def is_folder_root?
     @folder.parent_folder_id.nil?
   end
 
-  def broadcast_rename
+  def broadcast_file type
     FileChannel.broadcast(
       current_user,
-      FILE_RENAMED,
-      [Api::V1::FileUploadSerializer.new(@file).serializable_hash]
+      type,
+      [Api::V1::FileUploadSerializer.new(@file_upload).serializable_hash]
     )
   end
 end
