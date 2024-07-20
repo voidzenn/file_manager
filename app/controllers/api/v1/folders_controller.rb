@@ -90,7 +90,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
   end
 
   def find_folder
-    return unless params[:unique_token].present? || (params[:folder] && params[:folder]&[:unique_token].present?)
+    return unless params[:unique_token].present? || params[:folder]&[:unique_token].present?
 
     @folder = Folder.find_by(find_folder_query)
   end
