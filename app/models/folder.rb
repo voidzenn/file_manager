@@ -2,6 +2,7 @@ class Folder < ApplicationRecord
   PATH_FORMAT = /\A(?!\.\/)(?!.*\/.*\/)(\S+(?:\s+\S+)*)?(\.[a-zA-Z0-9_\-]+)?\/?\z/
 
   belongs_to :user
+  belongs_to :parent_folder, class_name: "Folder", optional: true
   has_many :file_uploads, dependent: :destroy
 
   before_create :generate_unique_token
