@@ -2,10 +2,9 @@
 
 class Api::V1::FileUploadsController < Api::V1::BaseController
   before_action :find_file, only: %i[view_file rename remove_file]
+  before_action :find_folder, only: %i[index]
 
   def index
-    find_folder if params[:folder_unique_token].present?
-
     @pagy, @file_uploads = pagy(FileUpload.where(index_query))
 
     return render_jsonapi [] if @file_uploads.empty?
@@ -127,8 +126,11 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
   end
 
   def find_folder
-    @folder = Folder.find_by!(
-      unique_token: params[:folder_unique_token] || params[:file_upload][:folder_unique_token]
+    return unless params[:folder_unique_token].present? ||
+      (params[:file_upload] && params[:file_upload][:folder_unique_token].present?)
+
+    @folder = Folder.find_by(
+      unique_token: params[:folder_unique_token] || (params[:file_upload] && params[:file_upload][:folder_unique_token])
     )
   end
 
@@ -137,10 +139,13 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
   end
 
   def index_query
-    {
-      user_id:   current_user.id,
-      folder_id: @folder&.id || nil
+    query = {
+      user_id:   current_user.id
     }
+
+    return query if @folder.nil?
+
+    query.merge({ folder_id: @folder.id })
   end
 
   def view_file_details
