@@ -1,11 +1,9 @@
 # frozen_string_literal: true
 
 class Api::V1::FoldersController < Api::V1::BaseController
-  before_action :find_folder, only: [:rename, :remove_folder]
+  before_action :find_folder, only: %i[index rename remove_folder]
 
   def index
-    find_current_folder if params[:unique_token].present?
-
     @pagy, @folders = pagy(Folder.where(index_query).order_by_date)
 
     render_jsonapi(
@@ -92,17 +90,20 @@ class Api::V1::FoldersController < Api::V1::BaseController
   end
 
   def find_folder
-    @folder = Folder.find_by!(user_id: current_user.id,
-                              unique_token: params[:unique_token] || params[:folder][:unique_token])
+    return unless params[:unique_token].present? || params[:folder]&[:unique_token].present?
+
+    @folder = Folder.find_by(find_folder_query)
   end
 
-  def find_current_folder
-    @folder = Folder.find_by!(user_id: current_user.id,
-                              unique_token: params[:unique_token])
+  def find_folder_query
+    query = {
+      user_id: current_user.id,
+      unique_token: params[:unique_token] || params[:folder][:unique_token]
+    }
   end
 
   def index_query
-    {
+    query = {
       user_id: current_user.id,
       parent_folder_id: @folder&.id || nil
     }
