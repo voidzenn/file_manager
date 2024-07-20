@@ -4,7 +4,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
   before_action :find_folder, only: %i[index rename remove_folder]
 
   def index
-    @pagy, @folders = pagy(Folder.where(index_query).order_by_date)
+    @pagy, @folders = pagy(folder_list)
 
     render_jsonapi(
       ActiveModel::Serializer::CollectionSerializer.new(
@@ -39,6 +39,8 @@ class Api::V1::FoldersController < Api::V1::BaseController
 
   def rename
     ActiveRecord::Base.transaction do
+      @old_full_path = @folder.full_path
+
       @folder = Api::V1::RenameFolderService.new(
         current_user: current_user,
         unique_token: folder_update_params[:unique_token],
@@ -47,7 +49,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
 
       Api::V1::RenameFolderJob.perform_later(
         current_user_bucket_token,
-        @folder
+        old_new_full_paths
       )
 
       broadcast_folder FOLDER_RENAMED
@@ -90,7 +92,8 @@ class Api::V1::FoldersController < Api::V1::BaseController
   end
 
   def find_folder
-    return unless params[:unique_token].present? || params[:folder]&[:unique_token].present?
+    return unless params[:unique_token].present? ||
+      (params[:folder] && params[:folder][:unique_token].present?)
 
     @folder = Folder.find_by(find_folder_query)
   end
@@ -105,7 +108,18 @@ class Api::V1::FoldersController < Api::V1::BaseController
   def index_query
     query = {
       user_id: current_user.id,
-      parent_folder_id: @folder&.id || nil
+      parent_folder_id: @folder&.id
+    }
+  end
+
+  def folder_list
+    @folder_list ||= Folder.where(index_query).order_by_date
+  end
+
+  def old_new_full_paths
+    {
+      old_full_path: @old_full_path,
+      new_full_path: @folder.full_path
     }
   end
 
