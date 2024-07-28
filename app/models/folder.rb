@@ -37,7 +37,7 @@ class Folder < ApplicationRecord
 
   def validate_path_not_changed
     if persisted? && path.present? && !path_changed?
-      errors.add(:path, I18n.t('errors.models.folder.same_as_previous_path_name.message'))
+      errors.add(:path, I18n.t('errors.models.folder.same_as_previous_name.message'))
     end
   end
 
