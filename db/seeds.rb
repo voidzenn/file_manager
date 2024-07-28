@@ -7,10 +7,14 @@
 #   Character.create(name: "Luke", movie: movies.first)
 
 puts "creating user"
-User.create!(
-  fname: "test",
-  lname: "user",
-  email: "test@user.com",
-  password: "Password12!"
-)
+ActiveRecord::Base.transaction do
+  user = User.create!(
+    fname: "test",
+    lname: "user",
+    email: "test@user.com",
+    password: "Password12!"
+  )
+
+  Api::V1::CreateBucketService.new(user.bucket_token).perform
+end
 puts "created user"
