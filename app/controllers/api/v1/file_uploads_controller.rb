@@ -43,7 +43,7 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
         Api::V1::UploadFileMinioService.new(
           current_user_bucket_token,
           folder_file_full_path,
-          file_upload_params[:file_upload]
+          file_upload_params[:file]
         ).perform
       end
     end
@@ -96,17 +96,13 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
       broadcast_file FILE_REMOVED
     end
 
-    render_jsonapi Api::V1::FileUploadSerializer.new(@file).serializable_hash
+    render_jsonapi Api::V1::FileUploadSerializer.new(@file_upload).serializable_hash
   end
 
   private
 
-  def view_file_params
-    params.permit(:unique_token)
-  end
-
   def file_upload_params
-    params.require(:file_upload).permit(:folder_unique_token, :file_upload)
+    params.require(:file_upload).permit(:folder_unique_token, :file)
   end
 
   def file_rename_params
@@ -114,7 +110,7 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
   end
 
   def find_file
-    @file_upload = FileUpload.find_by!(unique_token: params[:unique_token] || params[:file_upload][:unique_token])
+    @file_upload = FileUpload.find_by!(unique_token: params[:unique_token] || params[:file_upload] && params[:file_upload][:unique_token])
   end
 
   def find_folder
@@ -131,11 +127,11 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
   end
 
   def uploaded_filename
-    file_upload_params[:file_upload].original_filename
+    file_upload_params[:file].original_filename
   end
 
   def index_query
-    query = {
+    {
       user_id:   current_user.id,
       folder_id: @folder&.id
     }
@@ -149,23 +145,10 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
     }
   end
 
-  def file_upload_paths
-    folder_path = is_folder_root? ? @folder.path : @folder.full_path
-
-    {
-      old_full_path: folder_path + @old_file_name,
-      new_full_path: folder_path + @file.name
-    }
-  end
-
   def folder_file_full_path
     return uploaded_filename if @folder.nil?
 
     @folder.full_path + uploaded_filename
-  end
-
-  def is_folder_root?
-    @folder.parent_folder_id.nil?
   end
 
   def broadcast_file type

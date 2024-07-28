@@ -40,9 +40,13 @@ class Api::V1::FoldersController < Api::V1::BaseController
   def rename
     raise ActiveRecord::RecordNotFound if @folder.nil?
 
-    ActiveRecord::Base.transaction do
-      @old_full_path = @folder.full_path
+    @old_full_path = @folder.full_path
 
+    if @old_full_path == folder_update_params[:path]
+      raise Api::Error::RenameFolderError.new :same_as_previous_name
+    end
+
+    ActiveRecord::Base.transaction do
       @folder = Api::V1::RenameFolderService.new(
         current_user: current_user,
         unique_token: folder_update_params[:unique_token],

@@ -246,9 +246,25 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
     end
 
     context 'when renaming root folder fails' do
+      let(:path) { "test/" }
+      let!(:folder) { create(:folder, user_id: user.id, path: path, full_path: path) }
+      let(:invalid_params) do
+        {
+          folder: {
+            unique_token: folder.unique_token,
+            path: path
+          }
+        }
+      end
+
       it "returns not_found when parameter missing or folder not exist" do
         put :rename, params: {}
         expect(response).to have_http_status(:not_found)
+      end
+
+      it "returns error when path params same as previous path" do
+        put :rename, params: invalid_params
+        expect(response).to have_http_status(:unprocessable_entity)
       end
     end
   end

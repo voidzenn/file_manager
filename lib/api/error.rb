@@ -19,6 +19,9 @@ module Api
     class InternalServerError < Error
     end
 
+    class RenameFolderError < Error
+    end
+
     class RenameFileError < Error
     end
   end

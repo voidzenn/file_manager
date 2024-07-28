@@ -27,6 +27,9 @@ en:
           message: "already exists"
         same_as_previous_path_name:
           message: "should not be the same as previous path name"
+    folders:
+      same_as_previous_name:
+        message: "should not be the same as previous folder name"
     file_uploads:
       same_as_previous_name:
         message: "should not be the same as previous file name"
