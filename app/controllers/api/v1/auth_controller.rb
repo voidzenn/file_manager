@@ -20,7 +20,7 @@ class Api::V1::AuthController < Api::V1::BaseController
 
   def sign_in
     if @user && @user.authenticate(params[:password])
-      @token = JsonWebToken.encode @user.unique_token
+      @token = JsonWebToken.encode @user.unique_token, {}, 1.hour.from_now
       @refresh_token = JsonWebToken.encode_refresh_token @user.unique_token, {}, 1.month.from_now
 
       sign_in_response

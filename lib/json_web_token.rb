@@ -2,7 +2,7 @@
 
 class JsonWebToken
   SECRET_KEY = ENV['SECRET_KEY']
-  DEFAULT_EXPIRATION_TIME_MINUTES = 15.minutes
+  DEFAULT_EXPIRATION_TIME_MINUTES = 5.seconds
 
   class << self
     def encode id, payload = {}, exp = DEFAULT_EXPIRATION_TIME_MINUTES.from_now
@@ -18,12 +18,13 @@ class JsonWebToken
       OpenStruct.new decoded
     end
 
-    def encode_refresh_token id, payload = {}, exp = 1.month.from_now
+    def encode_refresh_token id, payload = {}, exp = 5.seconds.from_now
       payload[:id] = id
       payload[:token_type] = 'refresh'
 
-      encode_data payload, exp
+      encode_data payload, 1.month.from_now
     end
+
     private
 
     def encode_data payload, exp

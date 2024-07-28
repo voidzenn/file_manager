@@ -38,6 +38,8 @@ class Api::V1::FoldersController < Api::V1::BaseController
   end
 
   def rename
+    raise ActiveRecord::RecordNotFound if @folder.nil?
+
     ActiveRecord::Base.transaction do
       @old_full_path = @folder.full_path
 
@@ -64,6 +66,8 @@ class Api::V1::FoldersController < Api::V1::BaseController
   end
 
   def remove_folder
+    raise ActiveRecord::RecordNotFound if @folder.nil?
+
     ActiveRecord::Base.transaction do
       @folder.destroy!
 
@@ -95,18 +99,18 @@ class Api::V1::FoldersController < Api::V1::BaseController
     return unless params[:unique_token].present? ||
       (params[:folder] && params[:folder][:unique_token].present?)
 
-    @folder = Folder.find_by(find_folder_query)
+    @folder = Folder.find_by!(find_folder_query)
   end
 
   def find_folder_query
-    query = {
+    {
       user_id: current_user.id,
       unique_token: params[:unique_token] || params[:folder][:unique_token]
     }
   end
 
   def index_query
-    query = {
+    {
       user_id: current_user.id,
       parent_folder_id: @folder&.id
     }
@@ -124,13 +128,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
   end
 
   def folder_meta
-    meta = pagy_metadata(@pagy)
-
-    return meta if @folder.nil?
-
-    meta.merge({
-      full_path: @folder.full_path
-    })
+    pagy_metadata(@pagy)
   end
 
   def broadcast_folder type
