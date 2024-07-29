@@ -70,7 +70,7 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
         full_path: full_new_file_path
       )
 
-      Api::V1::RenameFileJob.perform_later(
+      RenameFileJob.perform_later(
         current_user_bucket_token,
         folder_full_path + @old_file_name,
         full_new_file_path
@@ -88,7 +88,7 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
     ActiveRecord::Base.transaction do
       @file_upload.destroy!
 
-      Api::V1::RemoveFileMinioJob.perform_later(
+      RemoveFileMinioJob.perform_later(
         current_user_bucket_token,
         @file_upload.full_path
       )

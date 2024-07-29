@@ -25,7 +25,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
 
       broadcast_folder FOLDER_CREATED
 
-      Api::V1::CreateFolderJob.perform_later(
+      CreateFolderJob.perform_later(
         current_user_bucket_token,
         @folder.full_path
       )
@@ -53,7 +53,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
         new_path: folder_update_params[:path]
       ).perform
 
-      Api::V1::RenameFolderJob.perform_later(
+      RenameFolderJob.perform_later(
         current_user_bucket_token,
         old_new_full_paths
       )
@@ -75,7 +75,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
     ActiveRecord::Base.transaction do
       @folder.destroy!
 
-      Api::V1::RemoveFolderMinioJob.perform_later(
+      RemoveFolderMinioJob.perform_later(
         current_user_bucket_token,
         @folder.full_path
       )

@@ -1,4 +1,6 @@
-class Api::V1::RemoveFolderMinioJob < ApplicationJob
+# frozen_string_literal: true
+
+class RemoveFolderMinioJob < ApplicationJob
   queue_as :default
 
   def perform bucket_token, folder_path

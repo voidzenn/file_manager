@@ -3,6 +3,8 @@ class Folder < ApplicationRecord
 
   belongs_to :user
   belongs_to :parent_folder, class_name: "Folder", optional: true
+
+  has_many :child_folders, class_name: "Folder", foreign_key: "parent_folder_id", dependent: :destroy
   has_many :file_uploads, dependent: :destroy
 
   before_create :generate_unique_token
