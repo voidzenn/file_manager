@@ -49,6 +49,7 @@ module Api
           with: :rescue_invalid_token
         )
         rescue_from JWT::ExpiredSignature, with: :rescue_expired_token
+        rescue_from Error::RenameFolderError, with: :rescue_rename_folder_error
         rescue_from Error::RenameFileError, with: :rescue_rename_file_error
       end
 
@@ -151,8 +152,12 @@ module Api
         render_error_response 'Token has expired', :unauthorized
       end
 
+      def rescue_rename_folder_error error
+        render_error_response I18n.t("errors.models.folder.#{error.message}"), :unprocessable_entity
+      end
+
       def rescue_rename_file_error error
-        render_error_response I18n.t("errors.file_uploads.#{error.message}"), :unprocessable_entity
+        render_error_response I18n.t("errors.models.file_upload.#{error.message}"), :unprocessable_entity
       end
 
       def render_error_response message, status, details = nil

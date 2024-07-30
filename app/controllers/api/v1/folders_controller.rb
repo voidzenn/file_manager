@@ -25,7 +25,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
 
       broadcast_folder FOLDER_CREATED
 
-      Api::V1::CreateFolderJob.perform_later(
+      CreateFolderJob.perform_later(
         current_user_bucket_token,
         @folder.full_path
       )
@@ -38,16 +38,22 @@ class Api::V1::FoldersController < Api::V1::BaseController
   end
 
   def rename
-    ActiveRecord::Base.transaction do
-      @old_full_path = @folder.full_path
+    raise ActiveRecord::RecordNotFound if @folder.nil?
 
+    @old_full_path = @folder.full_path
+
+    if @old_full_path == folder_update_params[:path]
+      raise Api::Error::RenameFolderError.new :same_as_previous_name
+    end
+
+    ActiveRecord::Base.transaction do
       @folder = Api::V1::RenameFolderService.new(
         current_user: current_user,
         unique_token: folder_update_params[:unique_token],
         new_path: folder_update_params[:path]
       ).perform
 
-      Api::V1::RenameFolderJob.perform_later(
+      RenameFolderJob.perform_later(
         current_user_bucket_token,
         old_new_full_paths
       )
@@ -64,10 +70,12 @@ class Api::V1::FoldersController < Api::V1::BaseController
   end
 
   def remove_folder
+    raise ActiveRecord::RecordNotFound if @folder.nil?
+
     ActiveRecord::Base.transaction do
       @folder.destroy!
 
-      Api::V1::RemoveFolderMinioJob.perform_later(
+      RemoveFolderMinioJob.perform_later(
         current_user_bucket_token,
         @folder.full_path
       )
@@ -95,18 +103,18 @@ class Api::V1::FoldersController < Api::V1::BaseController
     return unless params[:unique_token].present? ||
       (params[:folder] && params[:folder][:unique_token].present?)
 
-    @folder = Folder.find_by(find_folder_query)
+    @folder = Folder.find_by!(find_folder_query)
   end
 
   def find_folder_query
-    query = {
+    {
       user_id: current_user.id,
       unique_token: params[:unique_token] || params[:folder][:unique_token]
     }
   end
 
   def index_query
-    query = {
+    {
       user_id: current_user.id,
       parent_folder_id: @folder&.id
     }
@@ -124,13 +132,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
   end
 
   def folder_meta
-    meta = pagy_metadata(@pagy)
-
-    return meta if @folder.nil?
-
-    meta.merge({
-      full_path: @folder.full_path
-    })
+    pagy_metadata(@pagy)
   end
 
   def broadcast_folder type

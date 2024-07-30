@@ -25,8 +25,8 @@ en:
           message: "should only contain alphanumeric characters, spaces, underscores and hyphens for the name, should end with a forward slash."
         uniqueness:
           message: "already exists"
-        same_as_previous_path_name:
+        same_as_previous_name:
           message: "should not be the same as previous path name"
-    file_uploads:
-      same_as_previous_name:
-        message: "should not be the same as previous file name"
+      file_upload:
+        same_as_previous_name:
+          message: "should not be the same as previous file name"

@@ -1,4 +1,6 @@
-class Api::V1::RenameFileJob < ApplicationJob
+# frozen_string_literal: true
+
+class RenameRootFileJob < ApplicationJob
   queue_as :default
 
   def perform bucket_token, old_full_path, new_full_path

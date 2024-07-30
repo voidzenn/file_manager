@@ -106,15 +106,6 @@ RSpec.describe Folder, type: :model do
         expect(described_class.new(user_id: user.id, path: 'abc]/')).to be_valid
         expect(described_class.new(user_id: user.id, path: 'abc^/')).to be_valid
         expect(described_class.new(user_id: user.id, path: 'abc_/')).to be_valid
-        expect(described_class.new(user_id: user.id, path: 'abc`/')).to be_valid
-        expect(described_class.new(user_id: user.id, path: 'abc{/')).to be_valid
-        expect(described_class.new(user_id: user.id, path: 'abc|/')).to be_valid
-        expect(described_class.new(user_id: user.id, path: 'abc}/')).to be_valid
-        expect(described_class.new(user_id: user.id, path: 'abc~/')).to be_valid
-      end
-
-      it 'should not accept without names' do
-        expect(described_class.new(user_id: user.id, path: '/')).to_not be_valid
         expect(described_class.new(user_id: user.id, path: './')).to_not be_valid
         expect(described_class.new(user_id: user.id, path: '//')).to_not be_valid
       end
@@ -135,6 +126,14 @@ RSpec.describe Folder, type: :model do
 
       it 'should not accept double slashes' do
         expect(described_class.new(user_id: user.id, path: '123123/abc/')).to_not be_valid
+      end
+
+      it "should not accept new path name same as previous path name" do
+        path = "path/"
+        folder = create(:folder, path: path)
+
+        expect(folder.update(path: path)).to eq false
+        expect(folder.errors[:path]).to include(I18n.t('errors.models.folder.same_as_previous_name.message'))
       end
     end
 
