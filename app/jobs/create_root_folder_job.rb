@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Api::V1::CreateRootFolderJob < ApplicationJob
+class CreateRootFolderJob < ApplicationJob
   queue_as :default
 
   def perform bucket_token, path_name

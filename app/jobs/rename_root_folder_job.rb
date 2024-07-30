@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Api::V1::RenameRootFolderJob < ApplicationJob
+class RenameRootFolderJob < ApplicationJob
   queue_as :default
 
   def perform args = {}

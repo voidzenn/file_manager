@@ -3,7 +3,8 @@
 class User < ApplicationRecord
   has_secure_password
 
-  has_many :folders
+  has_many :folders, dependent: :destroy
+  has_many :file_uploads, dependent: :destroy
 
   before_create :generate_unique_token
   before_create :generate_bucket_token
