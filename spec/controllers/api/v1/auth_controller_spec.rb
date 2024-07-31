@@ -90,7 +90,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
 
       context "when email exist already" do
         let(:user) { create :user }
-        let(:valid_params) do
+        let(:invalid_params) do
           {
             email: user.email,
             password: "Password12!",
@@ -100,7 +100,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         end
 
         before do
-          post :sign_up, params: { user: valid_params }
+          post :sign_up, params: { user: invalid_params }
         end
 
         it do

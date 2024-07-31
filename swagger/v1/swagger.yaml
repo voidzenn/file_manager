@@ -6,13 +6,33 @@ info:
 paths:
   "/api/v1/auth/sign_up":
     post:
-      summary: "/api/v1/auth/sign_up"
+      summary: Sign Up
       tags:
       - Auth
       parameters: []
       responses:
         '201':
           description: created
+          content:
+            application/json:
+              examples:
+                example_0:
+                  value:
+                    success: true
+                    data:
+                      email: email@example.com
+                      fname: John
+                      lname: Doe
+                    meta: {}
+        '422':
+          description: email exists
+          content:
+            application/json:
+              examples:
+                example_0:
+                  value:
+                    success: false
+                    error: Parameter missing
       requestBody:
         content:
           application/json:
