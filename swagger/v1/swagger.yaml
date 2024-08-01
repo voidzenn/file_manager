@@ -25,14 +25,57 @@ paths:
                       lname: Doe
                     meta: {}
         '422':
-          description: email exists
+          description: unprocessable_entity
           content:
             application/json:
               examples:
-                example_0:
+                parameter_missing:
+                  value:
+                    success: false
+                    error:
+                    - "<attribute_name>": cannot be blank
+                email_invalid:
+                  value:
+                    success: false
+                    error:
+                    - email: is invalid
+                email_exists:
                   value:
                     success: false
                     error: Parameter missing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: object
+                  properties:
+                    email:
+                      type: string
+                    password:
+                      type: string
+                    fname:
+                      type: string
+                    lname:
+                      type: string
+                required:
+                - email
+                - password
+                - fname
+                - lname
+              require:
+              - user
+  "/api/v1/auth/sign_in":
+    post:
+      summary: Sign In
+      tags:
+      - Auth
+      parameters: []
+      responses:
+        '200':
+          description: ok
       requestBody:
         content:
           application/json:
@@ -43,15 +86,9 @@ paths:
                   type: string
                 password:
                   type: string
-                fname:
-                  type: string
-                lname:
-                  type: string
               required:
               - email
               - password
-              - fname
-              - lname
 servers:
 - url: https://{defaultHost}
   variables:
