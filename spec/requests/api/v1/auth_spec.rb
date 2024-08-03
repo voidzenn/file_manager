@@ -3,6 +3,8 @@
 require "swagger_helper"
 
 RSpec.describe "Auth API", type: :request do
+  AUTH_SPEC_TAG = "Auth"
+
   shared_context :missing_field_errors do |field_name|
     let(:valid_params) do
       {
@@ -37,7 +39,7 @@ RSpec.describe "Auth API", type: :request do
     end
 
     post "Sign Up" do
-      tags "Auth"
+      tags AUTH_SPEC_TAG
       consumes "application/json"
       produces "application/json"
       parameter name: :user, in: :body, schema: {
@@ -60,7 +62,7 @@ RSpec.describe "Auth API", type: :request do
       response "201", "created" do
         let(:user) { { user: valid_params } }
 
-        examples "application/json" => {
+        example "application/json", :created, {
           success: true,
           data: {
             email: "email@example.com",
@@ -128,7 +130,7 @@ RSpec.describe "Auth API", type: :request do
 
   path "/api/v1/auth/sign_in" do
     post "Sign In" do
-      tags "Auth"
+      tags AUTH_SPEC_TAG
       consumes "application/json"
       produces "application/json"
       parameter name: :user, in: :body, schema: {
@@ -149,12 +151,152 @@ RSpec.describe "Auth API", type: :request do
           }
         end
 
+        example "application/json", :ok, {
+          success: true,
+          data: {
+            email: "email@example.com",
+            fname: "John",
+            lname: "Doe"
+          },
+          meta: {
+            token: "abcde",
+            refresh_token: "abcde"
+          }
+        }
+
         run_test! do
           expect(response_body[:success]).to eq true
           expect(response_body[:meta][:token]).to eq assigns(:token)
           expect(response_body[:data][:email]).to eq new_user.email
           expect(response_body[:data][:fname]).to eq new_user.fname
           expect(response_body[:data][:lname]).to eq new_user.lname
+        end
+      end
+
+      response "404", "not_found" do
+        let(:user) do
+          { email: "user@user.com" }
+        end
+
+        before do
+          allow(User).to receive(:find_by).and_raise(ActiveRecord::RecordNotFound)
+        end
+
+        example "application/json", :not_found, {
+          success: false,
+          error: "Not found"
+        }
+
+        run_test! do
+          expect(response).to have_http_status(:not_found)
+          expect(response_body[:success]).to eq false
+        end
+      end
+
+      response "400", "unprocessable_entity" do
+        context "when parameter is missing" do
+          let(:user) {}
+
+          example "application/json", :parameter_missing, {
+            success: false,
+            error: "Parameter missing"
+          }
+
+          run_test! do
+            expect(response).to have_http_status(:bad_request)
+            expect(response_body[:error]).to eq "Parameter missing"
+          end
+        end
+      end
+
+      response "401", "unauthorized" do
+        context "when email params missing" do
+          let(:user) do
+            { password: "admin123" }
+          end
+
+          example "application/json", :unauthorized, {
+            success: false,
+            error: "Email or Password is invalid"
+          }
+
+          run_test! do
+            expect(response).to have_http_status(:unauthorized)
+            expect(response_body[:error]).to eq "Email or Password is invalid"
+          end
+        end
+
+        context "when password params missing" do
+          let(:user) do
+            { email: "user@user.com" }
+          end
+
+          example "application/json", :unauthorized, {
+            success: false,
+            error: "Email or Password is invalid"
+          }
+
+          run_test! do
+            expect(response).to have_http_status(:unauthorized)
+            expect(response_body[:error]).to eq "Email or Password is invalid"
+          end
+        end
+      end
+    end
+  end
+
+  path "/api/v1/auth/refresh_token" do
+    post "Refresh token" do
+      tags AUTH_SPEC_TAG
+      parameter name: "Authorization", in: :header, type: :string, required: true, description: "Token"
+
+      let!(:user) { create :user }
+      let(:user_refresh_token) { JsonWebToken.encode_refresh_token user.unique_token }
+
+      response "200", :ok do
+        let(:Authorization) { user_refresh_token }
+
+        example "application/json", :ok, {
+          success: true,
+          data: [],
+          meta: {
+            token: "abcde"
+          }
+        }
+
+        run_test! do
+          expect(response).to have_http_status(:ok)
+          expect(response_body[:meta][:token]).to_not be_empty
+        end
+      end
+
+      response "401", :unauthorized do
+        context "when token not valid" do
+          let(:Authorization) { "invalid_token" }
+
+          example "application/json", :invalid_token, {
+            success: false,
+            error: "Invalid Token"
+          }
+
+          run_test! do
+            expect(response).to have_http_status(:unauthorized)
+            expect(response_body[:success]).to eq(false)
+          end
+        end
+
+        context "when valid token but user not found" do
+          let(:Authorization) { JsonWebToken.encode_refresh_token "not_user" }
+
+          example "application/json", :unauthorized, {
+            success: false,
+            error: "Unauthorized"
+          }
+
+          run_test! do
+            expect(response).to have_http_status(:unauthorized)
+            expect(response_body[:success]).to eq(false)
+          end
         end
       end
     end

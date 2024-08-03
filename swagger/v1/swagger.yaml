@@ -16,7 +16,7 @@ paths:
           content:
             application/json:
               examples:
-                example_0:
+                created:
                   value:
                     success: true
                     data:
@@ -76,6 +76,46 @@ paths:
       responses:
         '200':
           description: ok
+          content:
+            application/json:
+              examples:
+                ok:
+                  value:
+                    success: true
+                    data:
+                      email: email@example.com
+                      fname: John
+                      lname: Doe
+                    meta:
+                      token: abcde
+                      refresh_token: abcde
+        '404':
+          description: not_found
+          content:
+            application/json:
+              examples:
+                not_found:
+                  value:
+                    success: false
+                    error: Not found
+        '400':
+          description: unprocessable_entity
+          content:
+            application/json:
+              examples:
+                parameter_missing:
+                  value:
+                    success: false
+                    error: Parameter missing
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              examples:
+                unauthorized:
+                  value:
+                    success: false
+                    error: Email or Password is invalid
       requestBody:
         content:
           application/json:
@@ -89,6 +129,43 @@ paths:
               required:
               - email
               - password
+  "/api/v1/auth/refresh_token":
+    post:
+      summary: Refresh token
+      tags:
+      - Auth
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        description: Token
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              examples:
+                ok:
+                  value:
+                    success: true
+                    data: []
+                    meta:
+                      token: abcde
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              examples:
+                invalid_token:
+                  value:
+                    success: false
+                    error: Invalid Token
+                unauthorized:
+                  value:
+                    success: false
+                    error: Unauthorized
 servers:
 - url: https://{defaultHost}
   variables:
