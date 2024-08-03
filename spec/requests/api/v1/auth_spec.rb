@@ -14,7 +14,9 @@ RSpec.describe "Auth API", type: :request do
         lname: "Doe"
       }.except(field_name)
     end
-    let(:user) { { user: valid_params } }
+    let(:params) do
+      { user: valid_params }
+    end
 
     run_test! do
       expect(response_body[:success]).to eq false
@@ -42,7 +44,8 @@ RSpec.describe "Auth API", type: :request do
       tags AUTH_SPEC_TAG
       consumes "application/json"
       produces "application/json"
-      parameter name: :user, in: :body, schema: {
+
+      parameter name: :params, in: :body, schema: {
         type: :object,
         properties: {
           user: {
@@ -60,7 +63,9 @@ RSpec.describe "Auth API", type: :request do
       }
 
       response "201", "created" do
-        let(:user) { { user: valid_params } }
+        let(:params) do
+          { user: valid_params }
+        end
 
         example "application/json", :created, {
           success: true,
@@ -100,11 +105,13 @@ RSpec.describe "Auth API", type: :request do
             error: [{email: "is invalid"}]
           }
 
-          let(:params) do
+          let(:invalid_params) do
             valid_params[:email] = "user.com"
             valid_params
           end
-          let(:user) { { user: params } }
+          let(:params) do
+            { user: invalid_params }
+          end
 
           run_test! "returns email is invalid error message" do
             expect(response_body[:error][0][:email]).to eq "is invalid"
@@ -118,7 +125,9 @@ RSpec.describe "Auth API", type: :request do
           }
 
           let!(:new_user) { create(:user, email: valid_params[:email]) }
-          let(:user) { { user: valid_params } }
+          let(:params) do
+            { user: valid_params }
+          end
 
           run_test! "returns emails exists error message" do
             expect(response_body[:error][0][:email]).to eq "already exists"
@@ -133,7 +142,8 @@ RSpec.describe "Auth API", type: :request do
       tags AUTH_SPEC_TAG
       consumes "application/json"
       produces "application/json"
-      parameter name: :user, in: :body, schema: {
+
+      parameter name: :params, in: :body, schema: {
         type: :object,
         properties: {
           email: { type: :string },
@@ -144,7 +154,7 @@ RSpec.describe "Auth API", type: :request do
 
       response "200", "ok" do
         let!(:new_user) { create :user }
-        let(:user) do
+        let(:params) do
           {
             email: new_user.email,
             password: new_user.password
@@ -174,7 +184,7 @@ RSpec.describe "Auth API", type: :request do
       end
 
       response "404", "not_found" do
-        let(:user) do
+        let(:params) do
           { email: "user@user.com" }
         end
 
@@ -195,7 +205,7 @@ RSpec.describe "Auth API", type: :request do
 
       response "400", "unprocessable_entity" do
         context "when parameter is missing" do
-          let(:user) {}
+          let(:params) {}
 
           example "application/json", :parameter_missing, {
             success: false,
@@ -211,7 +221,7 @@ RSpec.describe "Auth API", type: :request do
 
       response "401", "unauthorized" do
         context "when email params missing" do
-          let(:user) do
+          let(:params) do
             { password: "admin123" }
           end
 
@@ -227,7 +237,7 @@ RSpec.describe "Auth API", type: :request do
         end
 
         context "when password params missing" do
-          let(:user) do
+          let(:params) do
             { email: "user@user.com" }
           end
 
@@ -248,7 +258,7 @@ RSpec.describe "Auth API", type: :request do
   path "/api/v1/auth/refresh_token" do
     post "Refresh token" do
       tags AUTH_SPEC_TAG
-      parameter name: "Authorization", in: :header, type: :string, required: true, description: "Token"
+      parameter name: :Authorization, in: :header, type: :string, required: true, description: "Token"
 
       let!(:user) { create :user }
       let(:user_refresh_token) { JsonWebToken.encode_refresh_token user.unique_token }

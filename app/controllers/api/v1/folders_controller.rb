@@ -113,15 +113,15 @@ class Api::V1::FoldersController < Api::V1::BaseController
     }
   end
 
+  def folder_list
+    @folder_list ||= Folder.where(index_query).order_by_date
+  end
+
   def index_query
     {
       user_id: current_user.id,
       parent_folder_id: @folder&.id
     }
-  end
-
-  def folder_list
-    @folder_list ||= Folder.where(index_query).order_by_date
   end
 
   def old_new_full_paths
