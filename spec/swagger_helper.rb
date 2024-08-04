@@ -24,12 +24,7 @@ RSpec.configure do |config|
       paths: {},
       servers: [
         {
-          url: 'https://{defaultHost}',
-          variables: {
-            defaultHost: {
-              default: '127.0.0.1'
-            }
-          }
+          url: "https://#{ENV.fetch("HOST", "127.0.0.1:3000")}"
         }
       ]
     }
