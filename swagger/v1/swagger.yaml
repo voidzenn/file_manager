@@ -166,6 +166,328 @@ paths:
                   value:
                     success: false
                     error: Unauthorized
+  "/api/v1/file_uploads":
+    get:
+      summary: File upload list
+      tags:
+      - File Uploads
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        description: Token
+        schema:
+          type: string
+      - name: folder_unique_token
+        in: query
+        description: Folder token
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              examples:
+                without_parent_folder:
+                  value:
+                    success: true
+                    data:
+                    - id: 1
+                      folder_id: 
+                      unique_token: db0b7d03f6db5bf17282
+                      full_path: test.doc
+                      filename: test
+                      file_extension: doc
+                      created_at: '2024-08-04T12:21:39.395Z'
+                    meta:
+                      prev_url: "/api/v1/file_uploads?unique_token=&page="
+                      next_url: "/api/v1/file_uploads?unique_token=&page="
+                      count: 1
+                      page: 1
+                      last_url: "/api/v1/file_uploads?unique_token=&page=1"
+                      page_url: "/api/v1/file_uploads?unique_token=&page=1"
+                with_parent_folder:
+                  value:
+                    success: true
+                    data:
+                    - id: 2
+                      folder_id: 1
+                      unique_token: f40c95cbff36b81e66d8
+                      full_path: test/test.doc
+                      filename: test
+                      file_extension: doc
+                      created_at: '2024-08-04T12:36:36.897Z'
+                    meta:
+                      prev_url: "/api/v1/file_uploads?folder_unique_token=c86957b381e5f668217d&page="
+                      next_url: "/api/v1/file_uploads?folder_unique_token=c86957b381e5f668217d&page="
+                      count: 1
+                      page: 1
+                      last_url: "/api/v1/file_uploads?folder_unique_token=c86957b381e5f668217d&page=1"
+                      page_url: "/api/v1/file_uploads?folder_unique_token=c86957b381e5f668217d&page=1"
+    post:
+      summary: Create file upload
+      tags:
+      - File Uploads
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        description: Token
+        schema:
+          type: string
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              examples:
+                root_folder:
+                  value:
+                    success: true
+                    data:
+                      id: 3
+                      folder_id: 
+                      unique_token: 42bb75b8524afb4e50e0
+                      full_path: sample.pdf
+                      filename: sample
+                      file_extension: pdf
+                      created_at: '2024-08-04T13:23:19.460Z'
+                    meta: {}
+                nested_folder:
+                  value:
+                    success: true
+                    data:
+                      id: 4
+                      folder_id: 5
+                      unique_token: c3deb6e7f5491119a19d
+                      full_path: parent_path/child_path/sample.pdf
+                      filename: sample
+                      file_extension: pdf
+                      created_at: '2024-08-04T14:27:54.647Z'
+                    meta: {}
+                nested_nested_folder:
+                  value:
+                    success: true
+                    data:
+                      id: 5
+                      folder_id: 8
+                      unique_token: 58d422d940e9cacbf245
+                      full_path: parent_path/child_path/new_path/sample.pdf
+                      filename: sample
+                      file_extension: pdf
+                      created_at: '2024-08-04T14:29:50.280Z'
+                    meta: {}
+        '400':
+          description: bad_request
+          content:
+            application/json:
+              examples:
+                nested_nested_folder:
+                  value:
+                    success: false
+                    error: Parameter missing
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              examples:
+                nested_nested_folder:
+                  value:
+                    success: false
+                    error: Invalid Token
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: file
+        required: true
+        description: File to upload
+  "/api/v1/file_uploads/view_file":
+    get:
+      summary: View file
+      tags:
+      - File Uploads
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        description: Token
+        schema:
+          type: string
+      - name: unique_token
+        in: query
+        required: true
+        description: File upload token
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              examples:
+                without_parent_folder:
+                  value:
+                    success: true
+                    data:
+                      file_url: http://test_url/abcde
+                      file_name: test.doc
+                      file_extension: doc
+                    meta: {}
+        '404':
+          description: not_found
+          content:
+            application/json:
+              examples:
+                without_parent_folder:
+                  value:
+                    success: false
+                    error: Not found
+  "/api/v1/file_uploads/rename":
+    put:
+      summary: Rename file
+      tags:
+      - File Uploads
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        description: Token
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              examples:
+                without_folder:
+                  value:
+                    success: true
+                    data:
+                      id: 8
+                      folder_id: 
+                      unique_token: 9805776d6cc3b850f9bd
+                      full_path: new file.doc
+                      filename: new file
+                      file_extension: doc
+                      created_at: '2024-08-04T14:54:17.671Z'
+                    meta: {}
+                nested_1_deep_folder:
+                  value:
+                    success: true
+                    data:
+                      id: 9
+                      folder_id: 9
+                      unique_token: 9f17c41e61c011092f83
+                      full_path: parent_path/new file.doc
+                      filename: new file
+                      file_extension: doc
+                      created_at: '2024-08-04T14:57:25.562Z'
+                    meta: {}
+                nested_2_deep_folder:
+                  value:
+                    success: true
+                    data:
+                      id: 9
+                      folder_id: 9
+                      unique_token: 9f17c41e61c011092f83
+                      full_path: parent_path/new file.doc
+                      filename: new file
+                      file_extension: doc
+                      created_at: '2024-08-04T14:57:25.562Z'
+                    meta: {}
+        '404':
+          description: not_found
+          content:
+            application/json:
+              examples:
+                not_found:
+                  value:
+                    success: false
+                    error: Not found
+        '422':
+          description: unprocessable_entity
+          content:
+            application/json:
+              examples:
+                same_as_previous_name:
+                  value:
+                    success: false
+                    error: should not be the same as previous file name
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                file_upload:
+                  type: object
+                  properties:
+                    unique_token:
+                      type: string
+                    name:
+                      type: string
+                  required:
+                  - unique_token
+                  - name
+                required:
+                - file_upload
+        required: true
+  "/api/v1/file_uploads/remove_file":
+    delete:
+      summary: Remove file
+      tags:
+      - File Uploads
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        description: Token
+        schema:
+          type: string
+      - name: unique_token
+        in: query
+        required: true
+        description: File upload token
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              examples:
+                without_parent_folder:
+                  value:
+                    success: true
+                    data:
+                      id: 12
+                      folder_id: 
+                      unique_token: f57d4c664fed9f8565c8
+                      full_path: test.doc
+                      filename: test
+                      file_extension: doc
+                      created_at: '2024-08-04T15:09:23.568Z'
+                    meta: {}
+                with_parent_folder:
+                  value:
+                    success: true
+                    data:
+                      id: 14
+                      folder_id: 14
+                      unique_token: 743f4875d5e78ab40d8f
+                      full_path: test.doc
+                      filename: test
+                      file_extension: doc
+                      created_at: '2024-08-04T15:13:00.266Z'
+                    meta: {}
+        '404':
+          description: not_found
+          content:
+            application/json:
+              examples:
+                not_found:
+                  value:
+                    success: false
+                    error: Not found
   "/api/v1/folders":
     get:
       summary: Folder list

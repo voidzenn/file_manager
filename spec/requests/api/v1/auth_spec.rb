@@ -62,7 +62,7 @@ RSpec.describe "Auth API", type: :request do
         require: [ :user ]
       }
 
-      response "201", "created" do
+      response 201, "created" do
         let(:params) do
           { user: valid_params }
         end
@@ -86,7 +86,7 @@ RSpec.describe "Auth API", type: :request do
         end
       end
 
-      response "422", "unprocessable_entity" do
+      response 422, "unprocessable_entity" do
         context "when parameter missing" do
           example "application/json", :parameter_missing, {
             success: false,
@@ -152,7 +152,7 @@ RSpec.describe "Auth API", type: :request do
         required: [ :email, :password ]
       }
 
-      response "200", "ok" do
+      response 200, "ok" do
         let!(:new_user) { create :user }
         let(:params) do
           {
@@ -183,7 +183,7 @@ RSpec.describe "Auth API", type: :request do
         end
       end
 
-      response "404", "not_found" do
+      response 404, "not_found" do
         let(:params) do
           { email: "user@user.com" }
         end
@@ -203,7 +203,7 @@ RSpec.describe "Auth API", type: :request do
         end
       end
 
-      response "400", "unprocessable_entity" do
+      response 400, "unprocessable_entity" do
         context "when parameter is missing" do
           let(:params) {}
 
@@ -219,7 +219,7 @@ RSpec.describe "Auth API", type: :request do
         end
       end
 
-      response "401", "unauthorized" do
+      response 401, "unauthorized" do
         context "when email params missing" do
           let(:params) do
             { password: "admin123" }
@@ -263,7 +263,7 @@ RSpec.describe "Auth API", type: :request do
       let!(:user) { create :user }
       let(:user_refresh_token) { JsonWebToken.encode_refresh_token user.unique_token }
 
-      response "200", :ok do
+      response 200, :ok do
         let(:Authorization) { user_refresh_token }
 
         example "application/json", :ok, {
@@ -280,7 +280,7 @@ RSpec.describe "Auth API", type: :request do
         end
       end
 
-      response "401", :unauthorized do
+      response 401, :unauthorized do
         context "when token not valid" do
           let(:Authorization) { "invalid_token" }
 

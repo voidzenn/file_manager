@@ -27,7 +27,7 @@ RSpec.describe "Folders API", type: :request do
 
       include_context :authentication_grant_swag
 
-      response "200", :ok do
+      response 200, :ok do
         context "when retrieved folders list successfully without parent folder" do
           let!(:parent_folder) { create(:folder, path: "test/", user_id: user.id) }
           let(:unique_token) {}
@@ -145,7 +145,11 @@ RSpec.describe "Folders API", type: :request do
       include_context :allow_get_current_bucket
       include_context :authentication_grant_swag
 
-      response "201", :created do
+      response 201, :created do
+        before(:each) do
+          allow_any_instance_of(Api::V1::CreateFolderMinioService).to receive(:perform).and_return(true)
+        end
+
         context "when successfully creates root folder" do
           let(:params) do
             {
@@ -244,7 +248,7 @@ RSpec.describe "Folders API", type: :request do
         end
       end
 
-      response "400", :bad_request do
+      response 400, :bad_request do
         context "when parameter missing" do
           let(:params) {}
 
@@ -260,7 +264,7 @@ RSpec.describe "Folders API", type: :request do
         end
       end
 
-      response "422", :unprocessable_entity do
+      response 422, :unprocessable_entity do
         context "when path is blank" do
           let(:params) do
             { path: "" }
@@ -325,7 +329,7 @@ RSpec.describe "Folders API", type: :request do
       include_context :allow_get_current_bucket
       include_context :authentication_grant_swag
 
-      response "200", :ok do
+      response 200, :ok do
         before(:each) do
           allow_any_instance_of(Api::V1::RenameFolderMinioService).to receive(:perform).with(any_args).and_return(true)
         end
@@ -442,7 +446,7 @@ RSpec.describe "Folders API", type: :request do
         end
       end
 
-      response "404", :not_found do
+      response 404, :not_found do
         context "when parameter missing or folder not found" do
           let(:path) { "test/" }
           let!(:folder) { create(:folder, user_id: user.id, path: path, full_path: path) }
@@ -461,7 +465,7 @@ RSpec.describe "Folders API", type: :request do
         end
       end
 
-      response "422", :not_found do
+      response 422, :not_found do
         context "when parameter missing or folder not found" do
           let(:path) { "test/" }
           let!(:folder) { create(:folder, user_id: user.id, path: path, full_path: path) }
@@ -499,7 +503,7 @@ RSpec.describe "Folders API", type: :request do
       include_context :allow_get_current_bucket
       include_context :authentication_grant_swag
 
-      response "200", :ok do
+      response 200, :ok do
         let!(:folder) { create(:folder, user_id: user.id) }
         let(:unique_token) { folder.unique_token }
 
@@ -561,7 +565,7 @@ RSpec.describe "Folders API", type: :request do
         end
       end
 
-      response "404", :not_found do
+      response 404, :not_found do
         let(:unique_token) { "invalid_token" }
 
         example "application/json", :not_found, {

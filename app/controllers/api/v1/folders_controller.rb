@@ -11,7 +11,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
         @folders,
         serializer: Api::V1::FolderSerializer
       ),
-      meta: folder_meta
+      meta: pagy_metadata(@pagy)
     )
   end
 
@@ -129,10 +129,6 @@ class Api::V1::FoldersController < Api::V1::BaseController
       old_full_path: @old_full_path,
       new_full_path: @folder.full_path
     }
-  end
-
-  def folder_meta
-    pagy_metadata(@pagy)
   end
 
   def broadcast_folder type

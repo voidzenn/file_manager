@@ -46,6 +46,10 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
   end
 
   describe "POST #create" do
+    before(:each) do
+      allow_any_instance_of(Api::V1::CreateFolderMinioService).to receive(:perform).and_return(true)
+    end
+
     context "when created root folder successfully" do
       let(:valid_params) do
         {
