@@ -46,6 +46,10 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
   end
 
   describe "POST #create" do
+    before(:each) do
+      allow_any_instance_of(Api::V1::CreateFolderMinioService).to receive(:perform).and_return(true)
+    end
+
     context "when created root folder successfully" do
       let(:valid_params) do
         {
@@ -206,6 +210,7 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
       end
 
       before do
+        allow_any_instance_of(Api::V1::RenameFolderMinioService).to receive(:perform).with(any_args).and_return(true)
         put :rename, params: valid_params
       end
 
@@ -234,6 +239,7 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
       end
 
       before do
+        allow_any_instance_of(Api::V1::RenameFolderMinioService).to receive(:perform).with(any_args).and_return(true)
         put :rename, params: valid_params
       end
 
@@ -277,6 +283,10 @@ RSpec.describe Api::V1::FoldersController, type: :controller do
         {
           unique_token: folder.unique_token
         }
+      end
+
+      before do
+        allow_any_instance_of(Api::V1::RemoveFolderMinioService).to receive(:perform).with(any_args).and_return(true)
       end
 
       it "removes root folder" do

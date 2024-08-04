@@ -13,7 +13,8 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
       ActiveModel::Serializer::CollectionSerializer.new(
         @file_uploads,
         serializer: Api::V1::FileUploadSerializer
-      )
+      ),
+      meta: pagy_metadata(@pagy)
     )
   end
 
@@ -127,6 +128,8 @@ class Api::V1::FileUploadsController < Api::V1::BaseController
   end
 
   def uploaded_filename
+    raise ActionController::ParameterMissing if file_upload_params[:file].blank?
+
     file_upload_params[:file].original_filename
   end
 

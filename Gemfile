@@ -20,6 +20,7 @@ gem "aws-sdk-s3", "~> 1.134.0" , require: false
 gem "rack-cors"
 gem "active_model_serializers"
 gem "pagy"
+gem "rswag"
 
 group :development, :test do
   gem "debug", platforms: %i[ mri mingw x64_mingw ]

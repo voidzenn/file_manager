@@ -16,7 +16,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
     it "return #{field_name} error message" do
       expect(response_body[:success]).to eq false
       expect(response_body[:error][0][field_name.to_sym]).to eq "cannot be blank"
-      expect(response).to have_http_status(:unprocessable_entity)
+    expect(response).to have_http_status(:unprocessable_entity)
     end
   end
 
@@ -90,7 +90,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
 
       context "when email exist already" do
         let(:user) { create :user }
-        let(:valid_params) do
+        let(:invalid_params) do
           {
             email: user.email,
             password: "Password12!",
@@ -100,7 +100,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         end
 
         before do
-          post :sign_up, params: { user: valid_params }
+          post :sign_up, params: { user: invalid_params }
         end
 
         it do
