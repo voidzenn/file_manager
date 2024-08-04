@@ -11,7 +11,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
         @folders,
         serializer: Api::V1::FolderSerializer
       ),
-      meta: folder_meta
+      meta: pagy_metadata(@pagy)
     )
   end
 
@@ -113,6 +113,10 @@ class Api::V1::FoldersController < Api::V1::BaseController
     }
   end
 
+  def folder_list
+    @folder_list ||= Folder.where(index_query).order_by_date
+  end
+
   def index_query
     {
       user_id: current_user.id,
@@ -120,19 +124,11 @@ class Api::V1::FoldersController < Api::V1::BaseController
     }
   end
 
-  def folder_list
-    @folder_list ||= Folder.where(index_query).order_by_date
-  end
-
   def old_new_full_paths
     {
       old_full_path: @old_full_path,
       new_full_path: @folder.full_path
     }
-  end
-
-  def folder_meta
-    pagy_metadata(@pagy)
   end
 
   def broadcast_folder type

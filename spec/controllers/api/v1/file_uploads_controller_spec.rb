@@ -76,7 +76,6 @@ RSpec.describe Api::V1::FileUploadsController, type: :controller do
           }
         }
       end
-      let(:new_folder_path) { parent_folder.path + folder.path + 'new_path/' }
       let(:filename_without_extension) { sample_file.original_filename }
 
       before do
@@ -131,6 +130,10 @@ RSpec.describe Api::V1::FileUploadsController, type: :controller do
   end
 
   describe "PUT #rename" do
+    before(:each) do
+      allow_any_instance_of(Api::V1::RenameFileMinioService).to receive(:perform).and_return(true)
+    end
+
     context "when renaming file successfully without parent folder" do
       let(:path) { "parent_path/" }
       let!(:file_upload) { create(:file_upload, user_id: user.id, folder_id: nil) }
@@ -250,6 +253,10 @@ RSpec.describe Api::V1::FileUploadsController, type: :controller do
 
   describe "DELETE #remove_file" do
     context "when removing file successfully" do
+      before(:each) do
+        allow_any_instance_of(Api::V1::RemoveFileMinioService).to receive(:perform).and_return(true)
+      end
+
       context "when file with no parent folder" do
         let(:file_upload) { create(:file_upload, user_id: user.id, folder_id: nil) }
 
