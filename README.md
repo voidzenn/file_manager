@@ -29,7 +29,9 @@ A File manager with [React Frontend](https://github.com/voidzenn/file_manager_fe
 - **Docker**: Containerization of dependencies
 
 ## Preview
-
+![Screenshot from 2024-08-05 17-49-49](https://github.com/user-attachments/assets/526ace27-cc08-4037-b754-dc5dfb15a803)
+![Screenshot from 2024-08-05 17-50-25](https://github.com/user-attachments/assets/327fe08a-13ce-4d5c-9bf5-076900658301)
+![Screenshot from 2024-08-05 17-50-28](https://github.com/user-attachments/assets/4ebdb208-39af-402c-9f79-4add5a83d14f)
 
 ## Setup
 
