@@ -36,27 +36,8 @@ A File manager with [React Frontend](https://github.com/voidzenn/file_manager_fe
 ## Setup
 
 ### Prerequisites
-- Docker and Docker Compose installed on your machine
-
 ### Installation Steps
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd <repository-name>
-   ```
-
-2. **Build and run the Docker containers:**
-   ```bash
-   docker-compose up --build
-   ```
-
-3. **Run database migrations:**
-   ```bash
-   docker-compose run web rake db:create db:migrate
-   ```
-
-4. **Access the web application:**
-   Open your browser and navigate to `http://localhost:3000`.
 
 ## API Documentation
 - The API documentation is available via Swagger at [http://localhost:3000/api-docs](http://localhost:3000/api-docs).
+![Screenshot from 2024-08-05 17-48-37](https://github.com/user-attachments/assets/0cf0fd63-f738-4b64-a5ea-d890b878b707)
