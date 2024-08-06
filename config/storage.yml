@@ -12,7 +12,7 @@ minio:
   access_key_id: <%= ENV["MINIO_ACCESS_KEY_ID"] %>
   secret_access_key: <%= ENV["MINIO_SECRET_ACCESS_KEY"] %>
   region: <%= ENV["MINIO_REGION"] %>
-  endpoint: <%= ENV['MINIO_ENDPOINT'] %>
+  endpoint: <%= ENV["MINIO_ENDPOINT"] %>
   force_path_style: true
 
 # Remember not to checkin your GCS keyfile to a repository

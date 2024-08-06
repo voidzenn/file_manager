@@ -7,8 +7,14 @@
 #   Character.create(name: "Luke", movie: movies.first)
 
 puts "creating user"
-ActiveRecord::Base.transaction do
-  user = User.create!(
+user = User.find_by(
+  email: "test@user.com"
+)
+
+unless user.nil?
+  puts "user already exists"
+else
+  user = User.create(
     fname: "test",
     lname: "user",
     email: "test@user.com",
@@ -16,5 +22,6 @@ ActiveRecord::Base.transaction do
   )
 
   Api::V1::CreateBucketService.new(user.bucket_token).perform
+
+  puts "created user"
 end
-puts "created user"

@@ -67,3 +67,17 @@ Dependencies installed on your machine
 5. **Access the web application:**
 
    Open your browser and navigate to [http://localhost:3000](http://localhost:3000) or [http://localhost:3000/api-docs](http://localhost:3000/api-docs).
+
+
+## Frontend Access
+
+To access the frontend, use the following credentials:
+
+- **Email:** `test@user.com`
+- **Password:** `Password12!`
+
+## Issue and Solution for MinIO Presigned URLs
+
+**Issue:** When generating a presigned URL for file viewing in MinIO, the URL was using `http://minio:9000`, which resulted in a 403 Forbidden error.
+
+**Solution:** To resolve this issue, a custom Docker network was configured, and MinIO was assigned a specific network address. This approach ensured that MinIO operates with the correct domain and address, allowing presigned URLs to be generated and accessed without authorization issues.
