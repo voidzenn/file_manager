@@ -8,11 +8,11 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - file_manager:/var/lib/postgresql/data
     networks:
       - network1
+
   minio:
     image: minio/minio
     container_name: minio
@@ -27,7 +27,22 @@ services:
       - file_manager:/root/.minio
     command: server /data
     networks:
-      - network1
+      network1:
+        ipv4_address: ${MINIO_HOST}
+
+  configure-minio:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set minio http://${MINIO_HOST}:${MINIO_PORT} minioadmin minioadmin;
+      exit 0;
+      "
+    networks:
+      network1:
+        ipv4_address: ${MINIO_HOST_ALT}
+
   redis:
     image: redis:7.2
     container_name: redis
@@ -37,6 +52,7 @@ services:
       - file_manager:/data
     networks:
       - network1
+
   app:
     container_name: rails_server
     image: rails_server:latest
@@ -54,10 +70,11 @@ services:
       - redis
     environment:
       RAILS_WEB_CONTAINER: true
-      DB_HOST: db
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}
       REDIS_URL: redis://redis:${REDIS_PORT}/1
     networks:
       - network1
+
   sidekiq:
     container_name: rails_sidekiq
     image: rails_sidekiq:latest
@@ -73,11 +90,16 @@ services:
       - redis
       - app
     environment:
-      DB_HOST: db
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}
       REDIS_URL: redis://redis:${REDIS_PORT}/1
     networks:
       - network1
+
 volumes:
   file_manager:
+
 networks:
-  network1:
+ network1:
+  ipam:
+    config:
+    - subnet: ${CUSTOM_NETWORK_SUBNET}

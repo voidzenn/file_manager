@@ -8,6 +8,6 @@ Aws.config.update(
     ENV["MINIO_SECRET_ACCESS_KEY"]
   ),
   region: ENV["MINIO_REGION"],
-  endpoint: ENV.fetch('MINIO_DOCKER_ENDPOINT', ENV['MINIO_ENDPOINT']),
+  endpoint: ENV["MINIO_ENDPOINT"],
   force_path_style: true
 )
