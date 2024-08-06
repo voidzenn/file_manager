@@ -29,6 +29,12 @@ migrate_database() {
     echo "$env database already exists. Running migrations..."
     RAILS_ENV=$env rails db:migrate
   fi
+
+  # Seed the development database only
+  if [[ "$env" == "development" ]]; then
+    echo "Seeding development database..."
+    RAILS_ENV=$env rails db:seed
+  fi
 }
 
 # Migrate the development database
