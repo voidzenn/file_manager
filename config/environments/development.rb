@@ -71,4 +71,5 @@ Rails.application.configure do
   # Uncomment if you wish to allow Action Cable access from any origin.
   # config.action_cable.disable_request_forgery_protection = true
   config.action_cable.allowed_request_origins = ['ws://', 'http://localhost:3001', nil]
+  config.active_storage.url_options = { host: 'http://127.0.0.1:9000' }
 end
